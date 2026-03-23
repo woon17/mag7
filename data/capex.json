@@ -1,0 +1,849 @@
+[
+  {
+    "ticker": "AAPL",
+    "calendar_quarter": "2020Q1",
+    "val": 3960000000,
+    "form": "10-Q",
+    "val_billions": 3.96
+  },
+  {
+    "ticker": "AAPL",
+    "calendar_quarter": "2020Q2",
+    "val": 5525000000,
+    "form": "10-Q",
+    "val_billions": 5.52
+  },
+  {
+    "ticker": "AAPL",
+    "calendar_quarter": "2020Q3",
+    "val": 7309000000,
+    "form": "10-K",
+    "val_billions": 7.31
+  },
+  {
+    "ticker": "AAPL",
+    "calendar_quarter": "2020Q4",
+    "val": 3500000000,
+    "form": "10-Q",
+    "val_billions": 3.5
+  },
+  {
+    "ticker": "AAPL",
+    "calendar_quarter": "2021Q1",
+    "val": 5769000000,
+    "form": "10-Q",
+    "val_billions": 5.77
+  },
+  {
+    "ticker": "AAPL",
+    "calendar_quarter": "2021Q2",
+    "val": 7862000000,
+    "form": "10-Q",
+    "val_billions": 7.86
+  },
+  {
+    "ticker": "AAPL",
+    "calendar_quarter": "2021Q3",
+    "val": 11085000000,
+    "form": "10-K",
+    "val_billions": 11.08
+  },
+  {
+    "ticker": "AAPL",
+    "calendar_quarter": "2021Q4",
+    "val": 2803000000,
+    "form": "10-Q",
+    "val_billions": 2.8
+  },
+  {
+    "ticker": "AAPL",
+    "calendar_quarter": "2022Q1",
+    "val": 5317000000,
+    "form": "10-Q",
+    "val_billions": 5.32
+  },
+  {
+    "ticker": "AAPL",
+    "calendar_quarter": "2022Q2",
+    "val": 7419000000,
+    "form": "10-Q",
+    "val_billions": 7.42
+  },
+  {
+    "ticker": "AAPL",
+    "calendar_quarter": "2022Q3",
+    "val": 10708000000,
+    "form": "10-K",
+    "val_billions": 10.71
+  },
+  {
+    "ticker": "AAPL",
+    "calendar_quarter": "2022Q4",
+    "val": 3787000000,
+    "form": "10-Q",
+    "val_billions": 3.79
+  },
+  {
+    "ticker": "AAPL",
+    "calendar_quarter": "2023Q2",
+    "val": 6703000000,
+    "form": "10-Q",
+    "val_billions": 6.7
+  },
+  {
+    "ticker": "AAPL",
+    "calendar_quarter": "2023Q3",
+    "val": 10959000000,
+    "form": "10-K",
+    "val_billions": 10.96
+  },
+  {
+    "ticker": "AAPL",
+    "calendar_quarter": "2023Q4",
+    "val": 2392000000,
+    "form": "10-Q",
+    "val_billions": 2.39
+  },
+  {
+    "ticker": "AAPL",
+    "calendar_quarter": "2024Q1",
+    "val": 4388000000,
+    "form": "10-Q",
+    "val_billions": 4.39
+  },
+  {
+    "ticker": "AAPL",
+    "calendar_quarter": "2024Q2",
+    "val": 6539000000,
+    "form": "10-Q",
+    "val_billions": 6.54
+  },
+  {
+    "ticker": "AAPL",
+    "calendar_quarter": "2024Q3",
+    "val": 9447000000,
+    "form": "10-K",
+    "val_billions": 9.45
+  },
+  {
+    "ticker": "AAPL",
+    "calendar_quarter": "2024Q4",
+    "val": 2940000000,
+    "form": "10-Q",
+    "val_billions": 2.94
+  },
+  {
+    "ticker": "AAPL",
+    "calendar_quarter": "2025Q1",
+    "val": 6011000000,
+    "form": "10-Q",
+    "val_billions": 6.01
+  },
+  {
+    "ticker": "AAPL",
+    "calendar_quarter": "2025Q2",
+    "val": 9473000000,
+    "form": "10-Q",
+    "val_billions": 9.47
+  },
+  {
+    "ticker": "AAPL",
+    "calendar_quarter": "2025Q3",
+    "val": 12715000000,
+    "form": "10-K",
+    "val_billions": 12.72
+  },
+  {
+    "ticker": "AAPL",
+    "calendar_quarter": "2025Q4",
+    "val": 2373000000,
+    "form": "10-Q",
+    "val_billions": 2.37
+  },
+  {
+    "ticker": "GOOGL",
+    "calendar_quarter": "2020Q1",
+    "val": 6005000000,
+    "form": "10-Q",
+    "val_billions": 6.0
+  },
+  {
+    "ticker": "GOOGL",
+    "calendar_quarter": "2020Q2",
+    "val": 11396000000,
+    "form": "10-Q",
+    "val_billions": 11.4
+  },
+  {
+    "ticker": "GOOGL",
+    "calendar_quarter": "2020Q3",
+    "val": 16802000000,
+    "form": "10-Q",
+    "val_billions": 16.8
+  },
+  {
+    "ticker": "GOOGL",
+    "calendar_quarter": "2020Q4",
+    "val": 22281000000,
+    "form": "10-K",
+    "val_billions": 22.28
+  },
+  {
+    "ticker": "GOOGL",
+    "calendar_quarter": "2021Q1",
+    "val": 5942000000,
+    "form": "10-Q",
+    "val_billions": 5.94
+  },
+  {
+    "ticker": "GOOGL",
+    "calendar_quarter": "2021Q2",
+    "val": 11438000000,
+    "form": "10-Q",
+    "val_billions": 11.44
+  },
+  {
+    "ticker": "GOOGL",
+    "calendar_quarter": "2021Q3",
+    "val": 18257000000,
+    "form": "10-Q",
+    "val_billions": 18.26
+  },
+  {
+    "ticker": "GOOGL",
+    "calendar_quarter": "2021Q4",
+    "val": 24640000000,
+    "form": "10-K",
+    "val_billions": 24.64
+  },
+  {
+    "ticker": "GOOGL",
+    "calendar_quarter": "2022Q1",
+    "val": 9786000000,
+    "form": "10-Q",
+    "val_billions": 9.79
+  },
+  {
+    "ticker": "GOOGL",
+    "calendar_quarter": "2022Q2",
+    "val": 16614000000,
+    "form": "10-Q",
+    "val_billions": 16.61
+  },
+  {
+    "ticker": "GOOGL",
+    "calendar_quarter": "2022Q3",
+    "val": 23890000000,
+    "form": "10-Q",
+    "val_billions": 23.89
+  },
+  {
+    "ticker": "GOOGL",
+    "calendar_quarter": "2022Q4",
+    "val": 31485000000,
+    "form": "10-K",
+    "val_billions": 31.48
+  },
+  {
+    "ticker": "GOOGL",
+    "calendar_quarter": "2023Q1",
+    "val": 6289000000,
+    "form": "10-Q",
+    "val_billions": 6.29
+  },
+  {
+    "ticker": "GOOGL",
+    "calendar_quarter": "2023Q2",
+    "val": 13177000000,
+    "form": "10-Q",
+    "val_billions": 13.18
+  },
+  {
+    "ticker": "GOOGL",
+    "calendar_quarter": "2023Q3",
+    "val": 21232000000,
+    "form": "10-Q",
+    "val_billions": 21.23
+  },
+  {
+    "ticker": "GOOGL",
+    "calendar_quarter": "2023Q4",
+    "val": 32251000000,
+    "form": "10-K",
+    "val_billions": 32.25
+  },
+  {
+    "ticker": "GOOGL",
+    "calendar_quarter": "2024Q1",
+    "val": 12012000000,
+    "form": "10-Q",
+    "val_billions": 12.01
+  },
+  {
+    "ticker": "GOOGL",
+    "calendar_quarter": "2024Q2",
+    "val": 25198000000,
+    "form": "10-Q",
+    "val_billions": 25.2
+  },
+  {
+    "ticker": "GOOGL",
+    "calendar_quarter": "2024Q3",
+    "val": 38259000000,
+    "form": "10-Q",
+    "val_billions": 38.26
+  },
+  {
+    "ticker": "GOOGL",
+    "calendar_quarter": "2024Q4",
+    "val": 52535000000,
+    "form": "10-K",
+    "val_billions": 52.54
+  },
+  {
+    "ticker": "GOOGL",
+    "calendar_quarter": "2025Q1",
+    "val": 17197000000,
+    "form": "10-Q",
+    "val_billions": 17.2
+  },
+  {
+    "ticker": "GOOGL",
+    "calendar_quarter": "2025Q2",
+    "val": 39643000000,
+    "form": "10-Q",
+    "val_billions": 39.64
+  },
+  {
+    "ticker": "GOOGL",
+    "calendar_quarter": "2025Q3",
+    "val": 63596000000,
+    "form": "10-Q",
+    "val_billions": 63.6
+  },
+  {
+    "ticker": "GOOGL",
+    "calendar_quarter": "2025Q4",
+    "val": 91447000000,
+    "form": "10-K",
+    "val_billions": 91.45
+  },
+  {
+    "ticker": "META",
+    "calendar_quarter": "2020Q1",
+    "val": 3558000000,
+    "form": "10-Q",
+    "val_billions": 3.56
+  },
+  {
+    "ticker": "META",
+    "calendar_quarter": "2020Q2",
+    "val": 6813000000,
+    "form": "10-Q",
+    "val_billions": 6.81
+  },
+  {
+    "ticker": "META",
+    "calendar_quarter": "2020Q3",
+    "val": 10502000000,
+    "form": "10-Q",
+    "val_billions": 10.5
+  },
+  {
+    "ticker": "META",
+    "calendar_quarter": "2020Q4",
+    "val": 15163000000,
+    "form": "10-K",
+    "val_billions": 15.16
+  },
+  {
+    "ticker": "META",
+    "calendar_quarter": "2021Q1",
+    "val": 4303000000,
+    "form": "10-Q",
+    "val_billions": 4.3
+  },
+  {
+    "ticker": "META",
+    "calendar_quarter": "2021Q2",
+    "val": 8944000000,
+    "form": "10-Q",
+    "val_billions": 8.94
+  },
+  {
+    "ticker": "META",
+    "calendar_quarter": "2021Q3",
+    "val": 13290000000,
+    "form": "10-Q",
+    "val_billions": 13.29
+  },
+  {
+    "ticker": "META",
+    "calendar_quarter": "2021Q4",
+    "val": 18690000000,
+    "form": "10-K",
+    "val_billions": 18.69
+  },
+  {
+    "ticker": "META",
+    "calendar_quarter": "2022Q1",
+    "val": 5441000000,
+    "form": "10-Q",
+    "val_billions": 5.44
+  },
+  {
+    "ticker": "META",
+    "calendar_quarter": "2022Q2",
+    "val": 13013000000,
+    "form": "10-Q",
+    "val_billions": 13.01
+  },
+  {
+    "ticker": "META",
+    "calendar_quarter": "2022Q3",
+    "val": 22388000000,
+    "form": "10-Q",
+    "val_billions": 22.39
+  },
+  {
+    "ticker": "META",
+    "calendar_quarter": "2022Q4",
+    "val": 31186000000,
+    "form": "10-K",
+    "val_billions": 31.19
+  },
+  {
+    "ticker": "META",
+    "calendar_quarter": "2023Q1",
+    "val": 6823000000,
+    "form": "10-Q",
+    "val_billions": 6.82
+  },
+  {
+    "ticker": "META",
+    "calendar_quarter": "2023Q2",
+    "val": 12957000000,
+    "form": "10-Q",
+    "val_billions": 12.96
+  },
+  {
+    "ticker": "META",
+    "calendar_quarter": "2023Q3",
+    "val": 19453000000,
+    "form": "10-Q",
+    "val_billions": 19.45
+  },
+  {
+    "ticker": "META",
+    "calendar_quarter": "2023Q4",
+    "val": 27045000000,
+    "form": "10-K",
+    "val_billions": 27.04
+  },
+  {
+    "ticker": "META",
+    "calendar_quarter": "2024Q1",
+    "val": 6400000000,
+    "form": "10-Q",
+    "val_billions": 6.4
+  },
+  {
+    "ticker": "META",
+    "calendar_quarter": "2024Q2",
+    "val": 14573000000,
+    "form": "10-Q",
+    "val_billions": 14.57
+  },
+  {
+    "ticker": "META",
+    "calendar_quarter": "2024Q3",
+    "val": 22831000000,
+    "form": "10-Q",
+    "val_billions": 22.83
+  },
+  {
+    "ticker": "META",
+    "calendar_quarter": "2024Q4",
+    "val": 37256000000,
+    "form": "10-K",
+    "val_billions": 37.26
+  },
+  {
+    "ticker": "META",
+    "calendar_quarter": "2025Q1",
+    "val": 12941000000,
+    "form": "10-Q",
+    "val_billions": 12.94
+  },
+  {
+    "ticker": "META",
+    "calendar_quarter": "2025Q2",
+    "val": 29479000000,
+    "form": "10-Q",
+    "val_billions": 29.48
+  },
+  {
+    "ticker": "META",
+    "calendar_quarter": "2025Q3",
+    "val": 48308000000,
+    "form": "10-Q",
+    "val_billions": 48.31
+  },
+  {
+    "ticker": "META",
+    "calendar_quarter": "2025Q4",
+    "val": 69691000000,
+    "form": "10-K",
+    "val_billions": 69.69
+  },
+  {
+    "ticker": "MSFT",
+    "calendar_quarter": "2020Q1",
+    "val": 3767000000,
+    "form": "10-Q",
+    "val_billions": 3.77
+  },
+  {
+    "ticker": "MSFT",
+    "calendar_quarter": "2020Q2",
+    "val": 15441000000,
+    "form": "10-K",
+    "val_billions": 15.44
+  },
+  {
+    "ticker": "MSFT",
+    "calendar_quarter": "2020Q3",
+    "val": 4907000000,
+    "form": "10-Q",
+    "val_billions": 4.91
+  },
+  {
+    "ticker": "MSFT",
+    "calendar_quarter": "2020Q4",
+    "val": 4174000000,
+    "form": "10-Q",
+    "val_billions": 4.17
+  },
+  {
+    "ticker": "MSFT",
+    "calendar_quarter": "2021Q1",
+    "val": 5089000000,
+    "form": "10-Q",
+    "val_billions": 5.09
+  },
+  {
+    "ticker": "MSFT",
+    "calendar_quarter": "2021Q2",
+    "val": 20622000000,
+    "form": "10-K",
+    "val_billions": 20.62
+  },
+  {
+    "ticker": "MSFT",
+    "calendar_quarter": "2021Q3",
+    "val": 5810000000,
+    "form": "10-Q",
+    "val_billions": 5.81
+  },
+  {
+    "ticker": "MSFT",
+    "calendar_quarter": "2021Q4",
+    "val": 5865000000,
+    "form": "10-Q",
+    "val_billions": 5.86
+  },
+  {
+    "ticker": "MSFT",
+    "calendar_quarter": "2022Q1",
+    "val": 5340000000,
+    "form": "10-Q",
+    "val_billions": 5.34
+  },
+  {
+    "ticker": "MSFT",
+    "calendar_quarter": "2022Q2",
+    "val": 23886000000,
+    "form": "10-K",
+    "val_billions": 23.89
+  },
+  {
+    "ticker": "MSFT",
+    "calendar_quarter": "2022Q3",
+    "val": 6283000000,
+    "form": "10-Q",
+    "val_billions": 6.28
+  },
+  {
+    "ticker": "MSFT",
+    "calendar_quarter": "2022Q4",
+    "val": 6274000000,
+    "form": "10-Q",
+    "val_billions": 6.27
+  },
+  {
+    "ticker": "MSFT",
+    "calendar_quarter": "2023Q1",
+    "val": 6607000000,
+    "form": "10-Q",
+    "val_billions": 6.61
+  },
+  {
+    "ticker": "MSFT",
+    "calendar_quarter": "2023Q2",
+    "val": 28107000000,
+    "form": "10-K",
+    "val_billions": 28.11
+  },
+  {
+    "ticker": "MSFT",
+    "calendar_quarter": "2023Q3",
+    "val": 9917000000,
+    "form": "10-Q",
+    "val_billions": 9.92
+  },
+  {
+    "ticker": "MSFT",
+    "calendar_quarter": "2023Q4",
+    "val": 9735000000,
+    "form": "10-Q",
+    "val_billions": 9.74
+  },
+  {
+    "ticker": "MSFT",
+    "calendar_quarter": "2024Q1",
+    "val": 10952000000,
+    "form": "10-Q",
+    "val_billions": 10.95
+  },
+  {
+    "ticker": "MSFT",
+    "calendar_quarter": "2024Q2",
+    "val": 44477000000,
+    "form": "10-K",
+    "val_billions": 44.48
+  },
+  {
+    "ticker": "MSFT",
+    "calendar_quarter": "2024Q3",
+    "val": 14923000000,
+    "form": "10-Q",
+    "val_billions": 14.92
+  },
+  {
+    "ticker": "MSFT",
+    "calendar_quarter": "2024Q4",
+    "val": 15804000000,
+    "form": "10-Q",
+    "val_billions": 15.8
+  },
+  {
+    "ticker": "MSFT",
+    "calendar_quarter": "2025Q1",
+    "val": 16745000000,
+    "form": "10-Q",
+    "val_billions": 16.74
+  },
+  {
+    "ticker": "MSFT",
+    "calendar_quarter": "2025Q2",
+    "val": 64551000000,
+    "form": "10-K",
+    "val_billions": 64.55
+  },
+  {
+    "ticker": "MSFT",
+    "calendar_quarter": "2025Q3",
+    "val": 19394000000,
+    "form": "10-Q",
+    "val_billions": 19.39
+  },
+  {
+    "ticker": "MSFT",
+    "calendar_quarter": "2025Q4",
+    "val": 29876000000,
+    "form": "10-Q",
+    "val_billions": 29.88
+  },
+  {
+    "ticker": "NVDA",
+    "calendar_quarter": "2020Q2",
+    "val": 155000000,
+    "form": "10-Q",
+    "val_billions": 0.16
+  },
+  {
+    "ticker": "NVDA",
+    "calendar_quarter": "2020Q3",
+    "val": 372000000,
+    "form": "10-Q",
+    "val_billions": 0.37
+  },
+  {
+    "ticker": "TSLA",
+    "calendar_quarter": "2020Q1",
+    "val": 455000000,
+    "form": "10-Q",
+    "val_billions": 0.46
+  },
+  {
+    "ticker": "TSLA",
+    "calendar_quarter": "2020Q2",
+    "val": 1001000000,
+    "form": "10-Q",
+    "val_billions": 1.0
+  },
+  {
+    "ticker": "TSLA",
+    "calendar_quarter": "2020Q3",
+    "val": 2006000000,
+    "form": "10-Q",
+    "val_billions": 2.01
+  },
+  {
+    "ticker": "TSLA",
+    "calendar_quarter": "2020Q4",
+    "val": 3157000000,
+    "form": "10-K",
+    "val_billions": 3.16
+  },
+  {
+    "ticker": "TSLA",
+    "calendar_quarter": "2021Q1",
+    "val": 1348000000,
+    "form": "10-Q",
+    "val_billions": 1.35
+  },
+  {
+    "ticker": "TSLA",
+    "calendar_quarter": "2021Q2",
+    "val": 2853000000,
+    "form": "10-Q",
+    "val_billions": 2.85
+  },
+  {
+    "ticker": "TSLA",
+    "calendar_quarter": "2021Q3",
+    "val": 4672000000,
+    "form": "10-Q",
+    "val_billions": 4.67
+  },
+  {
+    "ticker": "TSLA",
+    "calendar_quarter": "2021Q4",
+    "val": 6482000000,
+    "form": "10-K",
+    "val_billions": 6.48
+  },
+  {
+    "ticker": "TSLA",
+    "calendar_quarter": "2022Q1",
+    "val": 1767000000,
+    "form": "10-Q",
+    "val_billions": 1.77
+  },
+  {
+    "ticker": "TSLA",
+    "calendar_quarter": "2022Q2",
+    "val": 3497000000,
+    "form": "10-Q",
+    "val_billions": 3.5
+  },
+  {
+    "ticker": "TSLA",
+    "calendar_quarter": "2022Q3",
+    "val": 5300000000,
+    "form": "10-Q",
+    "val_billions": 5.3
+  },
+  {
+    "ticker": "TSLA",
+    "calendar_quarter": "2022Q4",
+    "val": 7158000000,
+    "form": "10-K",
+    "val_billions": 7.16
+  },
+  {
+    "ticker": "TSLA",
+    "calendar_quarter": "2023Q1",
+    "val": 2072000000,
+    "form": "10-Q",
+    "val_billions": 2.07
+  },
+  {
+    "ticker": "TSLA",
+    "calendar_quarter": "2023Q2",
+    "val": 4132000000,
+    "form": "10-Q",
+    "val_billions": 4.13
+  },
+  {
+    "ticker": "TSLA",
+    "calendar_quarter": "2023Q3",
+    "val": 6592000000,
+    "form": "10-Q",
+    "val_billions": 6.59
+  },
+  {
+    "ticker": "TSLA",
+    "calendar_quarter": "2023Q4",
+    "val": 8899000000,
+    "form": "10-K",
+    "val_billions": 8.9
+  },
+  {
+    "ticker": "TSLA",
+    "calendar_quarter": "2024Q1",
+    "val": 2777000000,
+    "form": "10-Q",
+    "val_billions": 2.78
+  },
+  {
+    "ticker": "TSLA",
+    "calendar_quarter": "2024Q2",
+    "val": 5049000000,
+    "form": "10-Q",
+    "val_billions": 5.05
+  },
+  {
+    "ticker": "TSLA",
+    "calendar_quarter": "2024Q3",
+    "val": 8562000000,
+    "form": "10-Q",
+    "val_billions": 8.56
+  },
+  {
+    "ticker": "TSLA",
+    "calendar_quarter": "2024Q4",
+    "val": 11342000000,
+    "form": "10-K",
+    "val_billions": 11.34
+  },
+  {
+    "ticker": "TSLA",
+    "calendar_quarter": "2025Q1",
+    "val": 1492000000,
+    "form": "10-Q",
+    "val_billions": 1.49
+  },
+  {
+    "ticker": "TSLA",
+    "calendar_quarter": "2025Q2",
+    "val": 3886000000,
+    "form": "10-Q",
+    "val_billions": 3.89
+  },
+  {
+    "ticker": "TSLA",
+    "calendar_quarter": "2025Q3",
+    "val": 6134000000,
+    "form": "10-Q",
+    "val_billions": 6.13
+  },
+  {
+    "ticker": "TSLA",
+    "calendar_quarter": "2025Q4",
+    "val": 8527000000,
+    "form": "10-K",
+    "val_billions": 8.53
+  }
+]

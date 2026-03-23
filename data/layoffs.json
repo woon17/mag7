@@ -1,0 +1,106 @@
+[
+  {
+    "Company": "Amazon",
+    "Date_layoffs": "2022-10-28",
+    "Laid_Off": 150.0,
+    "Percentage": 0.0,
+    "Company_Size_before_Layoffs": 333483.0,
+    "ticker": "AMZN"
+  },
+  {
+    "Company": "Meta",
+    "Date_layoffs": "2022-11-09",
+    "Laid_Off": 11000.0,
+    "Percentage": 13.0,
+    "Company_Size_before_Layoffs": 84615.0,
+    "ticker": "META"
+  },
+  {
+    "Company": "Amazon",
+    "Date_layoffs": "2022-11-16",
+    "Laid_Off": 10000.0,
+    "Percentage": 3.0,
+    "Company_Size_before_Layoffs": 333333.0,
+    "ticker": "AMZN"
+  },
+  {
+    "Company": "Amazon",
+    "Date_layoffs": "2023-01-04",
+    "Laid_Off": 8000.0,
+    "Percentage": 2.0,
+    "Company_Size_before_Layoffs": 400000.0,
+    "ticker": "AMZN"
+  },
+  {
+    "Company": "Microsoft",
+    "Date_layoffs": "2023-01-18",
+    "Laid_Off": 10000.0,
+    "Percentage": 5.0,
+    "Company_Size_before_Layoffs": 200000.0,
+    "ticker": "MSFT"
+  },
+  {
+    "Company": "Google",
+    "Date_layoffs": "2023-01-20",
+    "Laid_Off": 12000.0,
+    "Percentage": 6.0,
+    "Company_Size_before_Layoffs": 200000.0,
+    "ticker": "GOOGL"
+  },
+  {
+    "Company": "Meta",
+    "Date_layoffs": "2023-03-14",
+    "Laid_Off": 10000.0,
+    "Percentage": 13.6,
+    "Company_Size_before_Layoffs": 73615.0,
+    "ticker": "META"
+  },
+  {
+    "Company": "Amazon",
+    "Date_layoffs": "2023-03-20",
+    "Laid_Off": 9000.0,
+    "Percentage": 2.3,
+    "Company_Size_before_Layoffs": 392000.0,
+    "ticker": "AMZN"
+  },
+  {
+    "Company": "Tesla",
+    "Date_layoffs": "2024-04-15",
+    "Laid_Off": 14000.0,
+    "Percentage": 10.0,
+    "Company_Size_before_Layoffs": 140000.0,
+    "ticker": "TSLA"
+  },
+  {
+    "Company": "Meta",
+    "Date_layoffs": "2025-02-10",
+    "Laid_Off": 3600.0,
+    "Percentage": 5.0,
+    "Company_Size_before_Layoffs": 72000.0,
+    "ticker": "META"
+  },
+  {
+    "Company": "Microsoft",
+    "Date_layoffs": "2025-05-23",
+    "Laid_Off": 6000.0,
+    "Percentage": 3.0,
+    "Company_Size_before_Layoffs": 200000.0,
+    "ticker": "MSFT"
+  },
+  {
+    "Company": "Microsoft",
+    "Date_layoffs": "2025-06-02",
+    "Laid_Off": 305.0,
+    "Percentage": 3.0,
+    "Company_Size_before_Layoffs": 10167.0,
+    "ticker": "MSFT"
+  },
+  {
+    "Company": "Microsoft",
+    "Date_layoffs": "2025-07-02",
+    "Laid_Off": 9000.0,
+    "Percentage": 4.0,
+    "Company_Size_before_Layoffs": 225000.0,
+    "ticker": "MSFT"
+  }
+]

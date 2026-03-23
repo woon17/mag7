@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Magnificent 7: Layoffs, Stock Prices & CapEx</title>
+  <link rel="stylesheet" href="css/style.css">
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+</head>
+
+<body>
+
+  <!-- Top bar -->
+  <header>
+    <h1>The Magnificent 7 — Tech Layoffs & Financial Impact</h1>
+    <p class="subtitle">Move your mouse left/right to travel through time across the loaded data range. Hover elements
+      for details. <a href="analysis.html" style="color: #58a6ff; text-decoration: underline;">View Research Analysis
+        →</a></p>
+    <div id="company-filter" class="company-filter"></div>
+  </header>
+
+  <!-- Time cursor display -->
+  <div id="time-display">
+    <span id="current-date">Jan 2020</span>
+  </div>
+
+  <!-- Main dashboard — all in one screen -->
+  <div class="dashboard">
+
+    <!-- Left: Stock chart (main) -->
+    <div class="panel panel-main">
+      <div class="panel-header">
+        <h2>Stock Performance</h2>
+        <div class="legend" id="stock-legend"></div>
+      </div>
+      <div id="stock-chart"></div>
+    </div>
+
+    <!-- Right column -->
+    <div class="panel-right">
+
+      <!-- Top right: CapEx -->
+      <div class="panel panel-small">
+        <div class="panel-header">
+          <h2>CapEx Spending</h2>
+          <div class="legend" id="capex-legend"></div>
+        </div>
+        <div id="capex-chart"></div>
+      </div>
+
+      <!-- Bottom right: Layoff info cards -->
+      <div class="panel panel-small">
+        <div class="panel-header">
+          <h2>Layoff Events</h2>
+        </div>
+        <div id="layoff-panel"></div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Timeline scrubber bar at bottom -->
+  <div id="timeline-bar">
+    <div id="timeline-track">
+      <div id="timeline-cursor"></div>
+      <div id="timeline-events"></div>
+    </div>
+    <div class="timeline-labels">
+      <span>2020</span><span>2021</span><span>2022</span><span>2023</span><span>2024</span>
+    </div>
+  </div>
+
+  <!-- Tooltip -->
+  <div id="tooltip"></div>
+
+  <script src="js/main.js"></script>
+</body>
+
+</html>

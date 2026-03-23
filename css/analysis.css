@@ -1,0 +1,241 @@
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background: #0d1117;
+  color: #c9d1d9;
+  padding: 24px;
+  line-height: 1.6;
+}
+
+header {
+  margin-bottom: 40px;
+  padding-bottom: 20px;
+  border-bottom: 2px solid #21262d;
+}
+
+header h1 {
+  font-size: 2rem;
+  color: #f0f6fc;
+  margin-bottom: 8px;
+}
+
+.subtitle {
+  color: #8b949e;
+  font-size: 0.95rem;
+}
+
+.research-questions {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 32px;
+  margin-bottom: 40px;
+}
+
+.question-card {
+  background: #161b22;
+  border: 1px solid #21262d;
+  border-radius: 8px;
+  padding: 24px;
+}
+
+.question-card h3 {
+  font-size: 1.1rem;
+  color: #f0f6fc;
+  margin-bottom: 16px;
+  line-height: 1.4;
+}
+
+.analysis-section {
+  margin-top: 16px;
+  min-height: 300px;
+}
+
+/* Event study and CapEx trends charts */
+.analysis-chart {
+  width: 100%;
+  height: 400px;
+  background: #0d1117;
+  border-radius: 4px;
+  border: 1px solid #30363d;
+}
+
+/* Summary statistics table */
+.summary-stats {
+  background: #161b22;
+  border: 1px solid #21262d;
+  border-radius: 8px;
+  padding: 24px;
+  margin-bottom: 40px;
+}
+
+.summary-stats h2 {
+  font-size: 1.3rem;
+  color: #f0f6fc;
+  margin-bottom: 20px;
+}
+
+.stats-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.stats-table thead {
+  background: #0d1117;
+  border-bottom: 2px solid #21262d;
+}
+
+.stats-table th,
+.stats-table td {
+  padding: 12px;
+  text-align: left;
+  border-bottom: 1px solid #21262d;
+}
+
+.stats-table th {
+  font-weight: 600;
+  color: #58a6ff;
+}
+
+.stats-table tr:hover {
+  background: #0d1117;
+}
+
+.company-name {
+  font-weight: 600;
+  color: #f0f6fc;
+}
+
+.metric-highlight {
+  color: #79c0ff;
+  font-weight: 500;
+}
+
+.positive {
+  color: #3fb950;
+}
+
+.negative {
+  color: #f85149;
+}
+
+.neutral {
+  color: #8b949e;
+}
+
+/* Analysis insights box */
+.insights {
+  background: #0d1117;
+  border-left: 4px solid #58a6ff;
+  padding: 16px;
+  margin-top: 16px;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.insights strong {
+  color: #79c0ff;
+}
+
+/* Back link */
+.back-link {
+  text-align: center;
+  margin-top: 40px;
+  padding-top: 20px;
+  border-top: 1px solid #21262d;
+}
+
+.back-link a {
+  color: #58a6ff;
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.2s;
+}
+
+.back-link a:hover {
+  color: #79c0ff;
+  text-decoration: underline;
+}
+
+/* Tooltip styles */
+.tooltip {
+  position: absolute;
+  background: #161b22;
+  border: 1px solid #30363d;
+  border-radius: 4px;
+  padding: 8px 12px;
+  font-size: 0.8rem;
+  color: #c9d1d9;
+  pointer-events: none;
+  z-index: 1000;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.tooltip.visible {
+  opacity: 1;
+}
+
+/* Chart axes */
+.axis {
+  font-size: 11px;
+  color: #8b949e;
+}
+
+.axis line,
+.axis path {
+  stroke: #30363d;
+  stroke-width: 1px;
+}
+
+.grid {
+  stroke: #21262d;
+  stroke-width: 1px;
+  stroke-dasharray: 4;
+}
+
+.grid line {
+  stroke: #21262d;
+  stroke-width: 1px;
+}
+
+/* Legend styles */
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-top: 16px;
+  padding: 12px;
+  background: #0d1117;
+  border-radius: 4px;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.85rem;
+}
+
+.legend-swatch {
+  width: 12px;
+  height: 12px;
+  border-radius: 2px;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+  body {
+    padding: 16px;
+  }
+
+  header h1 {
+    font-size: 1.5rem;
+  }
+
+  .analysis-section {
+    min-height: 300px;
+  }
+}
