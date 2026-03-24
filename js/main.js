@@ -14,7 +14,7 @@ const COMPANY_NAMES = {
 
 const tooltip = d3.select("#tooltip");
 const fmtDate = d3.timeFormat("%b %d, %Y");
-const fmtMonthYear = d3.timeFormat("%b %Y");
+const fmtMonthYear = d3.timeFormat("%b %d, %Y");
 const fmtNum = d3.format(",.0f");
 const fmtBillions = d => `$${(d / 1e9).toFixed(1)}B`;
 const fmtPct = d => d != null ? `${d}%` : "N/A";
@@ -306,16 +306,21 @@ function renderStockChart(stockData, layoffs) {
   const x = d3.scaleTime().domain([TIME_START, TIME_END]).range([0, width]);
   const allVals = [];
   normalized.forEach(v => v.forEach(d => allVals.push(d.value)));
-  const y = d3.scaleLinear().domain([0, d3.max(allVals) * 1.05]).range([height, 0]);
+  const yMin = d3.min(allVals);
+  const yMax = d3.max(allVals);
+  const yPad = (yMax - yMin) * 0.05;
+  const y = d3.scaleLinear().domain([yMin - yPad, yMax + yPad]).range([height, 0]);
 
   // Grid + axes
   svg.append("g").attr("class", "grid").call(d3.axisLeft(y).ticks(5).tickSize(-width).tickFormat(""));
   svg.append("g").attr("class", "axis").attr("transform", `translate(0,${height})`)
     .call(d3.axisBottom(x).ticks(d3.timeYear.every(1)));
-  svg.append("g").attr("class", "axis").call(d3.axisLeft(y).ticks(5));
+  svg.append("g").attr("class", "axis").call(
+    d3.axisLeft(y).ticks(5).tickFormat(d => `${d > 100 ? "+" : ""}${(d - 100).toFixed(0)}%`)
+  );
   svg.append("text").attr("transform", "rotate(-90)")
     .attr("y", -40).attr("x", -height / 2).attr("text-anchor", "middle")
-    .style("fill", "#8b949e").style("font-size", "11px").text("Normalized Price (Base = 100)");
+    .style("fill", "#8b949e").style("font-size", "11px").text("% Change from Start");
 
   // Clip path — reveals data up to current time
   svg.append("defs").append("clipPath").attr("id", "stock-clip")
@@ -446,9 +451,11 @@ function renderStockChart(stockData, layoffs) {
     }
 
     labelPositions.forEach(lp => {
+      const pctChange = (lp.value - 100).toFixed(0);
+      const sign = pctChange >= 0 ? "+" : "";
       cursorLabels[lp.ticker].style("display", null)
         .attr("x", cx + 8).attr("y", lp.yPos + 4)
-        .text(`$${lp.close.toFixed(1)}`);
+        .text(`$${lp.close.toFixed(1)} (${sign}${pctChange}%)`);
     });
   });
 }
