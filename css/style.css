@@ -125,8 +125,15 @@ header h1 {
 }
 
 .panel-small {
-  flex: 1;
   min-height: 0;
+}
+
+.panel-capex {
+  flex: 0 0 220px;
+}
+
+.panel-layoff {
+  flex: 1;
 }
 
 .panel-header {
@@ -174,6 +181,7 @@ header h1 {
 /* ========== TIMELINE BAR ========== */
 #timeline-bar {
   flex-shrink: 0;
+  position: relative;
   padding: 8px 24px 14px;
   background: #161b22;
   border-top: 1px solid #21262d;
@@ -191,22 +199,111 @@ header h1 {
 #timeline-cursor {
   position: absolute;
   top: -4px;
-  width: 3px;
+  width: 2px;
   height: 32px;
-  background: #58a6ff;
-  border-radius: 2px;
+  background: repeating-linear-gradient(
+    to bottom,
+    #58a6ff 0px,
+    #58a6ff 4px,
+    transparent 4px,
+    transparent 7px
+  );
+  border-radius: 0;
   pointer-events: none;
   transition: left 0.05s linear;
-  box-shadow: 0 0 8px rgba(88, 166, 255, 0.5);
+  box-shadow: none;
   overflow: visible;
 }
 
-.timeline-labels {
+#timeline-cursor-start {
+  display: none;
+  position: absolute;
+  top: -4px;
+  width: 10px;
+  height: 32px;
+  background: rgba(255, 255, 255, 0.7);
+  border-radius: 2px;
+  pointer-events: all;
+  cursor: ew-resize;
+  box-shadow: 0 0 6px rgba(255, 255, 255, 0.3);
+  overflow: visible;
+  z-index: 10;
+}
+
+#timeline-range {
+  display: none;
+}
+
+#range-start-date {
+  position: absolute;
+  bottom: calc(100% + 6px);
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.7);
+  background: rgba(22, 27, 34, 0.92);
+  border: 1px solid #30363d;
+  border-radius: 4px;
+  padding: 2px 6px;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+/* Show range elements only in compare mode */
+#timeline-bar.compare-active #timeline-cursor-start,
+#timeline-bar.compare-active #timeline-range {
+  display: block;
+}
+
+/* End cursor becomes draggable in compare mode */
+#timeline-bar.compare-active #timeline-cursor {
+  cursor: ew-resize;
+  pointer-events: all;
+  z-index: 10;
+  /* Switch from dashed gradient to solid block — matching start cursor style */
+  width: 10px;
+  background: #58a6ff;
+  border-radius: 2px;
+  box-shadow: 0 0 6px rgba(88, 166, 255, 0.4);
+}
+
+/* In compare mode, move end cursor label below the track (same as start cursor label) */
+
+.timeline-footer {
+  position: absolute;
+  right: 16px;
+  bottom: 6px;
   display: flex;
-  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+}
+
+
+.timeline-hint {
+  font-size: 0.65rem;
+  color: #484f58;
+  text-align: center;
+  padding-top: 2px;
+}
+
+.range-start-line {
+  stroke: rgba(255, 255, 255, 0.35);
+  stroke-width: 1.5px;
+  stroke-dasharray: 4,3;
+}
+
+.timeline-labels {
+  position: relative;
+  height: 16px;
   padding: 4px 0 0;
   font-size: 0.7rem;
   color: #484f58;
+}
+
+.timeline-labels span {
+  position: absolute;
+  transform: translateX(-50%);
 }
 
 /* Event ticks on timeline */
@@ -257,7 +354,61 @@ header h1 {
   flex: 1;
   min-height: 0;
   overflow: hidden;
+  position: relative;
 }
+
+/* ========== COMPARE INFO PANEL ========== */
+#compare-info {
+  display: none;
+  position: absolute;
+  top: 20px;
+  left: 65px;
+  background: rgba(13, 17, 23, 0.93);
+  border: 1px solid #30363d;
+  border-radius: 6px;
+  padding: 8px 12px;
+  pointer-events: none;
+  min-width: 230px;
+  z-index: 20;
+}
+
+.compare-info-header {
+  font-size: 0.68rem;
+  color: #58a6ff;
+  padding-bottom: 5px;
+  margin-bottom: 5px;
+  border-bottom: 1px solid #21262d;
+}
+
+.compare-info-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 0;
+  font-size: 0.72rem;
+}
+
+.compare-info-name {
+  font-weight: 600;
+  width: 64px;
+  flex-shrink: 0;
+}
+
+.compare-info-prices {
+  color: #8b949e;
+  font-size: 0.65rem;
+  flex: 1;
+}
+
+.compare-info-pct {
+  font-weight: 700;
+  font-size: 0.75rem;
+  text-align: right;
+  min-width: 52px;
+}
+
+.cmp-pos { color: #3fb950; }
+.cmp-neg { color: #f85149; }
 
 /* ========== CHART STYLES ========== */
 .axis text { fill: #8b949e; font-size: 10px; }
@@ -329,6 +480,19 @@ header h1 {
   font-size: 1.3rem;
   font-weight: 700;
   color: #f0f6fc;
+}
+
+/* ========== D3 BRUSH (Compare Mode) ========== */
+.stock-brush .selection {
+  fill: rgba(88, 166, 255, 0.10);
+  stroke: #58a6ff;
+  stroke-width: 1.5px;
+}
+.stock-brush .handle {
+  display: none; /* hide thick default handles; thin stroke on selection serves as border */
+}
+.stock-brush .overlay {
+  cursor: crosshair;
 }
 
 /* ========== CAPEX BARS ========== */

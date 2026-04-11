@@ -36,6 +36,10 @@ const globalTimeScale = d3.scaleTime().domain([TIME_START, TIME_END]).range([0, 
 let currentTime = TIME_END; // start showing full timeline
 const timeListeners = []; // functions called when time changes
 
+let rangeStartTime = TIME_START;
+const rangeListeners = [];
+let compareMode = false;
+
 function setTimeRange(startDate, endDate) {
   TIME_START = startDate;
   TIME_END = endDate;
@@ -52,7 +56,10 @@ function renderTimelineLabels() {
   const years = d3.range(startYear, endYear + 1);
 
   labels.selectAll("span").remove();
-  years.forEach(y => labels.append("span").text(y));
+  years.forEach(y => {
+    const pct = globalTimeScale(new Date(y, 0, 1)) * 100;
+    labels.append("span").text(y).style("left", pct + "%");
+  });
 }
 
 // ============================================
@@ -157,7 +164,9 @@ function setupCompanyFilter(tickers) {
 // ============================================
 function setupTimelineBar(layoffs) {
   const track = document.getElementById("timeline-track");
-  const cursor = document.getElementById("timeline-cursor");
+  const cursorEnd = document.getElementById("timeline-cursor");
+  const cursorStart = document.getElementById("timeline-cursor-start");
+  const rangeEl = document.getElementById("timeline-range");
   const eventsContainer = d3.select("#timeline-events");
 
   // Add layoff event ticks
@@ -165,25 +174,64 @@ function setupTimelineBar(layoffs) {
     const pct = globalTimeScale(d.date) * 100;
     eventsContainer.append("div")
       .attr("class", "timeline-tick")
+      .attr("data-ticker", d.ticker)
       .style("left", pct + "%")
       .style("background", COLORS[d.ticker]);
   });
 
-  function updateFromMouse(clientX) {
-    const rect = track.getBoundingClientRect();
-    const pct = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
-    cursor.style.left = (pct * rect.width - 1.5) + "px";
-    setGlobalTime(globalTimeScale.invert(pct));
+  // Hide/show ticks when company filter changes
+  filterListeners.push(() => {
+    eventsContainer.selectAll(".timeline-tick").each(function() {
+      const tick = d3.select(this);
+      const ticker = tick.attr("data-ticker");
+      tick.style("display", showingAll || selectedCompanies.has(ticker) ? null : "none");
+    });
+  });
+
+  function updateRangeHighlight() {
+    const startPct = globalTimeScale(rangeStartTime) * 100;
+    const endPct = globalTimeScale(currentTime) * 100;
+    rangeEl.style.left = Math.min(startPct, endPct) + "%";
+    rangeEl.style.width = Math.abs(endPct - startPct) + "%";
   }
 
-  let dragging = false;
-  track.addEventListener("mousedown", (e) => { dragging = true; updateFromMouse(e.clientX); });
-  window.addEventListener("mousemove", (e) => { if (dragging) updateFromMouse(e.clientX); });
-  window.addEventListener("mouseup", () => { dragging = false; });
-  track.addEventListener("click", (e) => updateFromMouse(e.clientX));
+  function updateEndCursor(clientX) {
+    const rect = track.getBoundingClientRect();
+    const pct = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
+    cursorEnd.style.left = (pct * rect.width - 1.5) + "px";
+    setGlobalTime(globalTimeScale.invert(pct));
+    updateRangeHighlight();
+  }
 
-  // Initialize cursor position
-  cursor.style.left = (track.getBoundingClientRect().width - 1.5) + "px";
+  function updateStartCursor(clientX) {
+    const rect = track.getBoundingClientRect();
+    const pct = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
+    cursorStart.style.left = (pct * rect.width - 1.5) + "px";
+    // Update position + label during drag, but don't rebase the chart yet
+    rangeStartTime = globalTimeScale.invert(pct);
+    d3.select("#range-start-date").text(fmtMonthYear(rangeStartTime));
+    updateRangeHighlight();
+  }
+
+  // Single mode only: clicking/dragging track sets end cursor
+  let draggingTrack = false;
+  track.addEventListener("mousedown", (e) => {
+    if (compareMode) return;
+    draggingTrack = true;
+    updateEndCursor(e.clientX);
+  });
+  window.addEventListener("mousemove", (e) => {
+    if (draggingTrack) updateEndCursor(e.clientX);
+  });
+  window.addEventListener("mouseup", () => { draggingTrack = false; });
+
+  // Keep range highlight in sync when end cursor moves via global mouse
+  timeListeners.push(updateRangeHighlight);
+
+  // Initialize cursor positions
+  const trackWidth = track.getBoundingClientRect().width;
+  cursorStart.style.left = (-1.5) + "px";
+  cursorEnd.style.left = (trackWidth - 1.5) + "px";
 }
 
 // ============================================
@@ -204,6 +252,7 @@ Promise.all([
     const minDate = new Date(dateExtent[0].getFullYear(), 0, 1);
     const maxDate = new Date(dateExtent[1].getFullYear(), 11, 31);
     setTimeRange(minDate, maxDate);
+    rangeStartTime = minDate;
   }
 
   layoffs.forEach(d => {
@@ -223,16 +272,25 @@ Promise.all([
   setGlobalTime(TIME_END);
   const track = document.getElementById("timeline-track");
   const trackCursor = document.getElementById("timeline-cursor");
+
+  // Align timeline bar padding so track + labels both match the stock chart's x-axis
+  const stockSvg = document.querySelector("#stock-chart svg");
+  if (stockSvg) {
+    const chartMarginLeft = 55, chartMarginRight = 20;
+    const svgRect = stockSvg.getBoundingClientRect();
+    const bar = document.getElementById("timeline-bar");
+    bar.style.paddingLeft = (svgRect.left + chartMarginLeft) + "px";
+    bar.style.paddingRight = (window.innerWidth - svgRect.right + chartMarginRight) + "px";
+  }
   trackCursor.style.left = (track.getBoundingClientRect().width - 1.5) + "px";
 
-  // Global mouse left/right controls time across the whole page
+  // Global mouse: drive time in single mode only
   document.addEventListener("mousemove", (e) => {
-    const pct = Math.max(0, Math.min(1, e.clientX / window.innerWidth));
+    if (compareMode) return;
+    const trackRect = track.getBoundingClientRect();
+    const pct = Math.max(0, Math.min(1, (e.clientX - trackRect.left) / trackRect.width));
     const t = globalTimeScale.invert(pct);
     setGlobalTime(t);
-
-    // Sync timeline bar cursor
-    const trackRect = track.getBoundingClientRect();
     trackCursor.style.left = (pct * trackRect.width - 1.5) + "px";
   });
 });
@@ -311,13 +369,13 @@ function renderStockChart(stockData, layoffs) {
   const yPad = (yMax - yMin) * 0.05;
   const y = d3.scaleLinear().domain([yMin - yPad, yMax + yPad]).range([height, 0]);
 
-  // Grid + axes
+  const fmtYAxis = d => `${d >= 100 ? "+" : ""}${(d - 100).toFixed(0)}%`;
+
+  // Grid + axes (fixed — no dynamic updates)
   svg.append("g").attr("class", "grid").call(d3.axisLeft(y).ticks(5).tickSize(-width).tickFormat(""));
   svg.append("g").attr("class", "axis").attr("transform", `translate(0,${height})`)
     .call(d3.axisBottom(x).ticks(d3.timeYear.every(1)));
-  svg.append("g").attr("class", "axis").call(
-    d3.axisLeft(y).ticks(5).tickFormat(d => `${d > 100 ? "+" : ""}${(d - 100).toFixed(0)}%`)
-  );
+  svg.append("g").attr("class", "axis").call(d3.axisLeft(y).ticks(5).tickFormat(fmtYAxis));
   svg.append("text").attr("transform", "rotate(-90)")
     .attr("y", -40).attr("x", -height / 2).attr("text-anchor", "middle")
     .style("fill", "#8b949e").style("font-size", "11px").text("% Change from Start");
@@ -328,6 +386,9 @@ function renderStockChart(stockData, layoffs) {
     .attr("x", 0).attr("y", -5).attr("height", height + 10).attr("width", width);
 
   const clipArea = svg.append("g").attr("clip-path", "url(#stock-clip)");
+
+  // Use normalized directly — no rebasing
+  const currentData = normalized;
 
   // Full lines (faded) as background reference
   const lineGen = d3.line().x(d => x(d.date)).y(d => y(d.value)).curve(d3.curveMonotoneX);
@@ -373,6 +434,11 @@ function renderStockChart(stockData, layoffs) {
     })
     .on("mouseout", (event) => { d3.select(event.target).attr("r", 7); hideTooltip(); });
 
+  // Range start indicator line (dashed, white)
+  const rangeStartLine = svg.append("line").attr("class", "range-start-line")
+    .attr("y1", 0).attr("y2", height)
+    .attr("x1", x(rangeStartTime)).attr("x2", x(rangeStartTime));
+
   // Vertical time cursor line
   const cursorLine = svg.append("line").attr("class", "time-cursor")
     .attr("y1", 0).attr("y2", height).attr("x1", width).attr("x2", width);
@@ -390,9 +456,117 @@ function renderStockChart(stockData, layoffs) {
 
   const bisect = d3.bisector(d => d.date).left;
 
+  // Get close price for a ticker at a given date
+  function getCloseAtTime(ticker, t) {
+    const data = normalized.get(ticker);
+    const i = Math.max(0, bisect(data, t, 1) - 1);
+    return data[Math.min(i, data.length - 1)].close;
+  }
+
+  // Sync timeline bar cursors to reflect brush selection
+  function syncTimelineCursors(t0, t1) {
+    const track = document.getElementById("timeline-track");
+    if (!track) return;
+    const tw = track.getBoundingClientRect().width;
+    const p0 = globalTimeScale(t0), p1 = globalTimeScale(t1);
+    document.getElementById("timeline-cursor-start").style.left = (p0 * tw - 1.5) + "px";
+    document.getElementById("timeline-cursor").style.left = (p1 * tw - 1.5) + "px";
+    document.getElementById("timeline-range").style.left  = (p0 * 100) + "%";
+    document.getElementById("timeline-range").style.width = ((p1 - p0) * 100) + "%";
+    d3.select("#range-start-date").text(fmtMonthYear(t0));
+    d3.select("#current-date").text(fmtMonthYear(t1));
+  }
+
+  // D3 brush — always active; drawing a rectangle auto-enters compare mode
+  const brushG = svg.append("g").attr("class", "stock-brush");
+  const brush = d3.brushX()
+    .extent([[0, 0], [width, height]])
+    .on("brush", ({ selection }) => {
+      if (!selection) return;
+      const [x0, x1] = selection;
+      const t0 = x.invert(x0), t1 = x.invert(x1);
+      // Auto-enter compare mode on first drag
+      if (!compareMode) {
+        compareMode = true;
+        document.getElementById("timeline-bar").classList.add("compare-active");
+        // Hide any residual cursor labels left from scrub mode
+        tickers.forEach(t => cursorLabels[t].style("display", "none"));
+      }
+      rangeStartLine.attr("x1", x0).attr("x2", x0);
+      cursorLine.attr("x1", x1).attr("x2", x1);
+      d3.select("#stock-clip-rect").attr("x", x0).attr("width", Math.max(0, x1 - x0));
+      syncTimelineCursors(t0, t1);
+      // Update compare panel live while dragging
+      rangeStartTime = t0;
+      currentTime    = t1;
+      updateComparePanel();
+    })
+    .on("end", ({ selection }) => {
+      if (!selection) {
+        // Brush cleared — exit compare mode
+        compareMode = false;
+        document.getElementById("timeline-bar").classList.remove("compare-active");
+        document.getElementById("compare-info").style.display = "none";
+        rangeStartTime = TIME_START;
+        d3.select("#stock-clip-rect").attr("x", 0).attr("width", x(currentTime));
+        rangeStartLine.attr("x1", x(TIME_START)).attr("x2", x(TIME_START));
+        cursorLine.attr("x1", x(currentTime)).attr("x2", x(currentTime));
+        return;
+      }
+      rangeStartTime = x.invert(selection[0]);
+      currentTime    = x.invert(selection[1]);
+      updateComparePanel();
+    });
+  brushG.call(brush);
+
+
+  // When range start moves: just reposition the start line and refresh the clip
+  function onRangeStartChange() {
+    rangeStartLine.attr("x1", x(rangeStartTime)).attr("x2", x(rangeStartTime));
+    setGlobalTime(currentTime); // re-fires timeListeners to update clip bounds
+    updateComparePanel();
+  }
+  rangeListeners.push(onRangeStartChange);
+
+  function updateComparePanel() {
+    const panel = document.getElementById("compare-info");
+    if (!panel) return;
+    if (!compareMode) { panel.style.display = "none"; return; }
+
+    const rows = tickers
+      .filter(t => active.has(t))
+      .map(t => {
+        const startPrice = getCloseAtTime(t, rangeStartTime);
+        const endPrice   = getCloseAtTime(t, currentTime);
+        const change = endPrice - startPrice;
+        const pct    = (change / startPrice) * 100;
+        return { t, startPrice, endPrice, change, pct };
+      })
+      .sort((a, b) => b.pct - a.pct);
+
+    panel.innerHTML = `
+      <div class="compare-info-header">
+        ${fmtMonthYear(rangeStartTime)} &rarr; ${fmtMonthYear(currentTime)}
+      </div>
+      ${rows.map(r => `
+        <div class="compare-info-row">
+          <span class="compare-info-name" style="color:${COLORS[r.t]}">${COMPANY_NAMES[r.t]}</span>
+          <span class="compare-info-prices">$${r.startPrice.toFixed(1)} → $${r.endPrice.toFixed(1)}</span>
+          <span class="compare-info-pct ${r.pct >= 0 ? 'cmp-pos' : 'cmp-neg'}">
+            ${r.pct >= 0 ? '+' : ''}${r.pct.toFixed(1)}%
+          </span>
+        </div>
+      `).join('')}
+    `;
+    panel.style.display = "block";
+  }
+
   // Transparent overlay for hover tooltips on stock lines
   svg.append("rect").attr("width", width).attr("height", height)
     .style("fill", "none").style("pointer-events", "all").style("cursor", "crosshair");
+
+  // Brush must always sit above the hover overlay in SVG z-order
+  brushG.raise();
 
   function updateLines() {
     tickers.forEach(t => {
@@ -409,8 +583,9 @@ function renderStockChart(stockData, layoffs) {
   timeListeners.push((t) => {
     const cx = x(t);
 
-    // Move clip rect
-    d3.select("#stock-clip-rect").attr("width", cx);
+    // Move clip rect — in compare mode only show [rangeStart, currentTime]
+    const clipX = compareMode ? x(rangeStartTime) : 0;
+    d3.select("#stock-clip-rect").attr("x", clipX).attr("width", Math.max(0, cx - clipX));
 
     // Move cursor line
     cursorLine.attr("x1", cx).attr("x2", cx);
@@ -419,7 +594,7 @@ function renderStockChart(stockData, layoffs) {
     let labelPositions = [];
     tickers.forEach(ticker => {
       if (!active.has(ticker)) return;
-      const data = normalized.get(ticker);
+      const data = currentData.get(ticker);
       const i = bisect(data, t, 1);
       if (i === 0 || i >= data.length) {
         cursorDots[ticker].style("display", "none");
@@ -453,7 +628,7 @@ function renderStockChart(stockData, layoffs) {
     labelPositions.forEach(lp => {
       const pctChange = (lp.value - 100).toFixed(0);
       const sign = pctChange >= 0 ? "+" : "";
-      cursorLabels[lp.ticker].style("display", null)
+      cursorLabels[lp.ticker].style("display", compareMode ? "none" : null)
         .attr("x", cx + 8).attr("y", lp.yPos + 4)
         .text(`$${lp.close.toFixed(1)} (${sign}${pctChange}%)`);
     });
