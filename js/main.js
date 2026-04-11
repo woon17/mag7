@@ -496,21 +496,24 @@ function renderStockChart(stockData, layoffs) {
       cursorLine.attr("x1", x1).attr("x2", x1);
       d3.select("#stock-clip-rect").attr("x", x0).attr("width", Math.max(0, x1 - x0));
       syncTimelineCursors(t0, t1);
-      // Update compare panel live while dragging
+      // Update all panels live while dragging
       rangeStartTime = t0;
       currentTime    = t1;
+      timeListeners.forEach(fn => fn(t1));
       updateComparePanel();
     })
     .on("end", ({ selection }) => {
       if (!selection) {
         // Brush cleared — exit compare mode
         compareMode = false;
+        rangeStartTime = TIME_START;
         document.getElementById("timeline-bar").classList.remove("compare-active");
         document.getElementById("compare-info").style.display = "none";
-        rangeStartTime = TIME_START;
         d3.select("#stock-clip-rect").attr("x", 0).attr("width", x(currentTime));
         rangeStartLine.attr("x1", x(TIME_START)).attr("x2", x(TIME_START));
         cursorLine.attr("x1", x(currentTime)).attr("x2", x(currentTime));
+        // Restore CapEx and Layoff to full-timeline view
+        timeListeners.forEach(fn => fn(currentTime));
         return;
       }
       rangeStartTime = x.invert(selection[0]);
@@ -742,7 +745,7 @@ function renderCapexChart(capex) {
     .domain([quarterToDate(quarters[0]), quarterToDate(quarters[quarters.length - 1])])
     .range([0, width]);
 
-  // Listen to time changes — dim future bars
+  // Listen to time changes — dim bars outside the active range
   timeListeners.push((t) => {
     const cx = Math.max(0, Math.min(width, capexTimeScale(t)));
     capexCursor.attr("x1", cx).attr("x2", cx);
@@ -750,7 +753,10 @@ function renderCapexChart(capex) {
     svg.selectAll(".capex-bar").each(function () {
       const bar = d3.select(this);
       const qDate = new Date(bar.attr("data-quarter-date"));
-      bar.attr("opacity", qDate <= t ? 0.85 : 0.1);
+      const inRange = compareMode
+        ? qDate >= rangeStartTime && qDate <= t
+        : qDate <= t;
+      bar.attr("opacity", inRange ? 0.85 : 0.1);
     });
   });
 }
@@ -795,12 +801,15 @@ function renderLayoffPanel(layoffs) {
     });
   });
 
-  // Listen to time — show/hide cards
+  // Listen to time — show cards within the active range
   timeListeners.push((t) => {
     panel.selectAll(".layoff-card").each(function () {
       const card = d3.select(this);
       const cardDate = new Date(card.attr("data-date"));
-      card.classed("visible", cardDate <= t);
+      const inRange = compareMode
+        ? cardDate >= rangeStartTime && cardDate <= t
+        : cardDate <= t;
+      card.classed("visible", inRange);
     });
   });
 }
