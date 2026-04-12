@@ -376,11 +376,27 @@ function renderStockChart(stockData, layoffs) {
 
   const fmtYAxis = d => `${d >= 100 ? "+" : ""}${(d - 100).toFixed(0)}%`;
 
+  // Always include 100 (0%) in y-axis ticks
+  function yTickValues(scale) {
+    const ticks = scale.ticks(5);
+    if (!ticks.includes(100)) {
+      ticks.push(100);
+      ticks.sort((a, b) => a - b);
+    }
+    return ticks;
+  }
+
   // Grid + axes (updated dynamically when active set changes)
-  const gridG = svg.append("g").attr("class", "grid").call(d3.axisLeft(y).ticks(5).tickSize(-width).tickFormat(""));
+  const gridG = svg.append("g").attr("class", "grid").call(d3.axisLeft(y).tickValues(yTickValues(y)).tickSize(-width).tickFormat(""));
   svg.append("g").attr("class", "axis").attr("transform", `translate(0,${height})`)
     .call(d3.axisBottom(x).ticks(d3.timeYear.every(1)));
-  const yAxisG = svg.append("g").attr("class", "axis").call(d3.axisLeft(y).ticks(5).tickFormat(fmtYAxis));
+  const yAxisG = svg.append("g").attr("class", "axis").call(d3.axisLeft(y).tickValues(yTickValues(y)).tickFormat(fmtYAxis));
+
+  // Persistent 0% baseline
+  const zeroLine = svg.append("line").attr("class", "zero-line")
+    .attr("x1", 0).attr("x2", width)
+    .attr("y1", y(100)).attr("y2", y(100));
+
   svg.append("text").attr("transform", "rotate(-90)")
     .attr("y", -40).attr("x", -height / 2).attr("text-anchor", "middle")
     .style("fill", "#8b949e").style("font-size", "11px").text("% Change from Start");
@@ -613,14 +629,15 @@ function renderStockChart(stockData, layoffs) {
       if (active.has(t)) v.forEach(d => activeVals.push(d.value));
     });
     if (activeVals.length === 0) return;
-    const newMin = d3.min(activeVals);
-    const newMax = d3.max(activeVals);
+    const newMin = Math.min(d3.min(activeVals), 100); // always include 0%
+    const newMax = Math.max(d3.max(activeVals), 100); // always include 0%
     const newPad = (newMax - newMin) * 0.05;
     y.domain([newMin - newPad, newMax + newPad]);
 
-    // Redraw axis and grid with transition
-    yAxisG.transition().duration(400).call(d3.axisLeft(y).ticks(5).tickFormat(fmtYAxis));
-    gridG.transition().duration(400).call(d3.axisLeft(y).ticks(5).tickSize(-width).tickFormat(""));
+    // Redraw axis, grid, and zero line with transition
+    yAxisG.transition().duration(400).call(d3.axisLeft(y).tickValues(yTickValues(y)).tickFormat(fmtYAxis));
+    gridG.transition().duration(400).call(d3.axisLeft(y).tickValues(yTickValues(y)).tickSize(-width).tickFormat(""));
+    zeroLine.transition().duration(400).attr("y1", y(100)).attr("y2", y(100));
 
     // Redraw all line paths with new scale
     tickers.forEach(t => {

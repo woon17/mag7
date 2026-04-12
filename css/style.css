@@ -416,6 +416,8 @@ header h1 {
 .grid line { stroke: #21262d; stroke-dasharray: 2,2; }
 .grid path { stroke: none; }
 
+.zero-line { stroke: #8b949e; stroke-width: 1; stroke-dasharray: 4,3; opacity: 0.6; }
+
 .stock-line { fill: none; stroke-width: 2; }
 .stock-line-future { fill: none; stroke-width: 2; stroke-dasharray: 4,3; opacity: 0.15; }
 
