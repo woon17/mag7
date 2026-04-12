@@ -32,6 +32,52 @@ header h1 {
   font-size: 0.8rem;
 }
 
+/* ========== HEADER FILTERS WRAPPER ========== */
+.header-filters {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  align-items: flex-start;
+}
+
+/* ========== YEAR FILTER ========== */
+.year-filter {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.year-filter-label {
+  color: #8b949e;
+  font-size: 0.85rem;
+  margin-right: 4px;
+}
+
+.year-btn {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid #30363d;
+  border-radius: 4px;
+  color: #8b949e;
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 2px 10px;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+
+.year-btn:hover {
+  background: rgba(88, 166, 255, 0.12);
+  border-color: #58a6ff;
+  color: #c9d1d9;
+}
+
+.year-btn.active {
+  background: rgba(88, 166, 255, 0.2);
+  border-color: #58a6ff;
+  color: #58a6ff;
+}
+
 /* ========== COMPANY FILTER ========== */
 .company-filter {
   display: flex;

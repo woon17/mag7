@@ -45,6 +45,12 @@ let rangeStartTime = TIME_START;
 const rangeListeners = [];
 let compareMode = false;
 
+// Year filter state
+let activeYear = null; // null = all years
+let FULL_TIME_START = TIME_START; // the full data range (never changes)
+let FULL_TIME_END = TIME_END;
+const yearRangeListeners = []; // notified when year zoom changes
+
 function setTimeRange(startDate, endDate) {
   TIME_START = startDate;
   TIME_END = endDate;
@@ -52,19 +58,72 @@ function setTimeRange(startDate, endDate) {
   renderTimelineLabels();
 }
 
+function setYearRange(startDate, endDate) {
+  setTimeRange(startDate, endDate);
+  rangeStartTime = startDate;
+  currentTime = endDate;
+  compareMode = false;
+  const bar = document.getElementById("timeline-bar");
+  if (bar) bar.classList.remove("compare-active");
+  const info = document.getElementById("compare-info");
+  if (info) info.style.display = "none";
+  yearRangeListeners.forEach(fn => fn(startDate, endDate));
+  setGlobalTime(endDate);
+  // Snap timeline cursor to the end of the selected range
+  const track = document.getElementById("timeline-track");
+  const cursor = document.getElementById("timeline-cursor");
+  if (track && cursor) cursor.style.left = (track.getBoundingClientRect().width - 1.5) + "px";
+}
+
+function setupYearFilter(startYear, endYear) {
+  const container = d3.select("#year-filter");
+  container.append("span").attr("class", "year-filter-label").text("Year:");
+
+  const makeBtn = (label, year) => {
+    container.append("button")
+      .attr("class", "year-btn" + (year === null ? " active" : ""))
+      .attr("id", year === null ? "year-btn-all" : `year-btn-${year}`)
+      .text(label)
+      .on("click", function () {
+        container.selectAll(".year-btn").classed("active", false);
+        d3.select(this).classed("active", true);
+        activeYear = year;
+        if (year === null) {
+          setYearRange(new Date(startYear, 0, 1), new Date(endYear, 11, 31));
+        } else {
+          setYearRange(new Date(year, 0, 1), new Date(year, 11, 31));
+        }
+      });
+  };
+
+  makeBtn("All", null);
+  d3.range(startYear, endYear + 1).forEach(y => makeBtn(String(y), y));
+}
+
+const fmtMonthShort = d3.timeFormat("%b");
+
 function renderTimelineLabels() {
   const labels = d3.select(".timeline-labels");
   if (labels.empty()) return;
 
-  const startYear = TIME_START.getFullYear();
-  const endYear = TIME_END.getFullYear();
-  const years = d3.range(startYear, endYear + 1);
-
   labels.selectAll("span").remove();
-  years.forEach(y => {
-    const pct = globalTimeScale(new Date(y, 0, 1)) * 100;
-    labels.append("span").text(y).style("left", pct + "%");
-  });
+
+  if (activeYear !== null) {
+    // Single year selected — show month labels
+    d3.range(0, 12).forEach(m => {
+      const date = new Date(activeYear, m, 1);
+      const pct = globalTimeScale(date) * 100;
+      labels.append("span").text(fmtMonthShort(date)).style("left", pct + "%");
+    });
+  } else {
+    // All years — show year labels
+    const startYear = TIME_START.getFullYear();
+    const endYear = TIME_END.getFullYear();
+    d3.range(startYear, endYear + 1).forEach(y => {
+      const pct = globalTimeScale(new Date(y, 0, 1)) * 100;
+      labels.append("span").text(y).style("left", pct + "%");
+    });
+  }
 }
 
 // ============================================
@@ -180,8 +239,22 @@ function setupTimelineBar(layoffs) {
     eventsContainer.append("div")
       .attr("class", "timeline-tick")
       .attr("data-ticker", d.ticker)
+      .attr("data-date", d.date.toISOString())
       .style("left", pct + "%")
       .style("background", COLORS[d.ticker]);
+  });
+
+  // Reposition + show/hide ticks when year range changes
+  yearRangeListeners.push(() => {
+    eventsContainer.selectAll(".timeline-tick").each(function() {
+      const tick = d3.select(this);
+      const tickDate = new Date(tick.attr("data-date"));
+      const ticker = tick.attr("data-ticker");
+      const inRange = tickDate >= TIME_START && tickDate <= TIME_END;
+      const companyOk = showingAll || selectedCompanies.has(ticker);
+      tick.style("display", inRange && companyOk ? null : "none")
+          .style("left", (globalTimeScale(tickDate) * 100) + "%");
+    });
   });
 
   // Hide/show ticks when company filter changes
@@ -189,7 +262,9 @@ function setupTimelineBar(layoffs) {
     eventsContainer.selectAll(".timeline-tick").each(function() {
       const tick = d3.select(this);
       const ticker = tick.attr("data-ticker");
-      tick.style("display", showingAll || selectedCompanies.has(ticker) ? null : "none");
+      const tickDate = new Date(tick.attr("data-date"));
+      const inYearRange = tickDate >= TIME_START && tickDate <= TIME_END;
+      tick.style("display", (showingAll || selectedCompanies.has(ticker)) && inYearRange ? null : "none");
     });
   });
 
@@ -253,9 +328,14 @@ Promise.all([
 
   // Use loaded stock data to drive the dashboard time span.
   const dateExtent = d3.extent(stockData, d => d.date);
+  let dataStartYear = 2020, dataEndYear = 2024;
   if (dateExtent[0] && dateExtent[1]) {
-    const minDate = new Date(dateExtent[0].getFullYear(), 0, 1);
-    const maxDate = new Date(dateExtent[1].getFullYear(), 11, 31);
+    dataStartYear = dateExtent[0].getFullYear();
+    dataEndYear   = dateExtent[1].getFullYear();
+    const minDate = new Date(dataStartYear, 0, 1);
+    const maxDate = new Date(dataEndYear, 11, 31);
+    FULL_TIME_START = minDate;
+    FULL_TIME_END   = maxDate;
     setTimeRange(minDate, maxDate);
     rangeStartTime = minDate;
   }
@@ -268,6 +348,7 @@ Promise.all([
 
   const tickers = [...new Set(stockData.map(d => d.ticker))];
   setupCompanyFilter(tickers);
+  setupYearFilter(dataStartYear, dataEndYear);
   setupTimelineBar(layoffs);
   renderStockChart(stockData, layoffs);
   renderCapexChart(capex);
@@ -388,8 +469,8 @@ function renderStockChart(stockData, layoffs) {
 
   // Grid + axes (updated dynamically when active set changes)
   const gridG = svg.append("g").attr("class", "grid").call(d3.axisLeft(y).tickValues(yTickValues(y)).tickSize(-width).tickFormat(""));
-  svg.append("g").attr("class", "axis").attr("transform", `translate(0,${height})`)
-    .call(d3.axisBottom(x).ticks(d3.timeYear.every(1)));
+  const xAxisG = svg.append("g").attr("class", "axis").attr("transform", `translate(0,${height})`)
+    .call(d3.axisBottom(x).ticks(d3.timeYear.every(1)).tickFormat(d3.timeFormat("%Y")));
   const yAxisG = svg.append("g").attr("class", "axis").call(d3.axisLeft(y).tickValues(yTickValues(y)).tickFormat(fmtYAxis));
 
   // Persistent 0% baseline
@@ -618,15 +699,20 @@ function renderStockChart(stockData, layoffs) {
       const vis = active.has(t);
       svg.selectAll(`.line-${t}`).style("opacity", vis ? 1 : 0);
       svg.selectAll(`.future-${t}`).style("opacity", vis ? 0.15 : 0);
-      svg.selectAll(`.marker-${t}`).style("display", vis ? null : "none");
+      svg.selectAll(`.marker-${t}`).style("display", function(d) {
+        return vis && d.date >= TIME_START && d.date <= TIME_END ? null : "none";
+      });
       cursorDots[t].style("display", vis ? null : "none");
       cursorLabels[t].style("display", vis ? null : "none");
     });
 
-    // Recalculate y domain from only visible tickers
+    // Recalculate y domain from only visible tickers within the current time window
     const activeVals = [];
     normalized.forEach((v, t) => {
-      if (active.has(t)) v.forEach(d => activeVals.push(d.value));
+      if (active.has(t)) {
+        v.filter(d => d.date >= TIME_START && d.date <= TIME_END)
+         .forEach(d => activeVals.push(d.value));
+      }
     });
     if (activeVals.length === 0) return;
     const newMin = Math.min(d3.min(activeVals), 100); // always include 0%
@@ -645,14 +731,42 @@ function renderStockChart(stockData, layoffs) {
       svg.selectAll(`.future-${t}`).transition().duration(400).attr("d", lineGen);
     });
 
-    // Redraw layoff markers
+    // Redraw layoff markers — named transition so it doesn't interrupt "marker-x"
     svg.selectAll(".layoff-marker")
-      .transition().duration(400)
+      .transition("marker-y").duration(400)
       .attr("cy", d => y(d.yVal));
 
     // Re-fire time listeners to reposition cursor dots at new scale
     timeListeners.forEach(fn => fn(currentTime));
   }
+
+  // Zoom the stock chart when year filter changes
+  yearRangeListeners.push((startDate, endDate) => {
+    x.domain([startDate, endDate]);
+    xAxisG.transition().duration(400).call(
+      activeYear === null
+        ? d3.axisBottom(x).ticks(d3.timeYear.every(1)).tickFormat(d3.timeFormat("%Y"))
+        : d3.axisBottom(x).ticks(d3.timeMonth.every(1)).tickFormat(d3.timeFormat("%b"))
+    );
+    // Redraw lines and faded background lines
+    tickers.forEach(t => {
+      svg.selectAll(`.line-${t}`).transition().duration(400).attr("d", lineGen);
+      svg.selectAll(`.future-${t}`).transition().duration(400).attr("d", lineGen);
+    });
+    // Reset cursor and clip rect
+    cursorLine.attr("x1", x(endDate)).attr("x2", x(endDate));
+    rangeStartLine.attr("x1", x(startDate)).attr("x2", x(startDate));
+    d3.select("#stock-clip-rect").attr("x", 0).attr("width", x(endDate));
+    // Recalculate y domain + axis first (updateLines sets new y scale)
+    updateLines();
+    // Reposition markers with both new x and y scales — named transitions don't conflict
+    svg.selectAll(".layoff-marker")
+      .transition("marker-x").duration(400)
+      .attr("cx", d => x(d.date));
+    svg.selectAll(".layoff-marker")
+      .transition("marker-y").duration(400)
+      .attr("cy", d => y(d.yVal));
+  });
 
   // Listen to global time changes
   timeListeners.push((t) => {
@@ -831,6 +945,20 @@ function renderCapexChart(capex) {
       bar.attr("opacity", inRange ? 0.85 : 0.1);
     });
   });
+
+  // Show/hide bars when year filter changes
+  yearRangeListeners.push((startDate, endDate) => {
+    svg.selectAll(".capex-bar").each(function () {
+      const bar = d3.select(this);
+      const qDate = new Date(bar.attr("data-quarter-date"));
+      const inYear = qDate >= startDate && qDate <= endDate;
+      const ticker = bar.attr("data-ticker");
+      const companyOk = showingAll || selectedCompanies.has(ticker);
+      bar.style("display", inYear && companyOk ? null : "none");
+    });
+    // Re-trigger time listener so opacity is set correctly
+    timeListeners.forEach(fn => fn(currentTime));
+  });
 }
 
 // ============================================
@@ -878,10 +1006,22 @@ function renderLayoffPanel(layoffs) {
     panel.selectAll(".layoff-card").each(function () {
       const card = d3.select(this);
       const cardDate = new Date(card.attr("data-date"));
-      const inRange = compareMode
-        ? cardDate >= rangeStartTime && cardDate <= t
-        : cardDate <= t;
+      // Always respect rangeStartTime (updated by year filter or compare mode)
+      const inRange = cardDate >= rangeStartTime && cardDate <= t;
       card.classed("visible", inRange);
+    });
+  });
+
+  // Show/hide cards when year filter changes
+  yearRangeListeners.push((startDate, endDate) => {
+    panel.selectAll(".layoff-card").each(function () {
+      const card = d3.select(this);
+      const ticker = card.attr("data-ticker");
+      const cardDate = new Date(card.attr("data-date"));
+      const inYear = cardDate >= startDate && cardDate <= endDate;
+      const companyOk = showingAll || selectedCompanies.has(ticker);
+      card.style("display", inYear && companyOk ? null : "none");
+      card.classed("visible", inYear && companyOk);
     });
   });
 }
