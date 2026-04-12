@@ -371,11 +371,11 @@ function renderStockChart(stockData, layoffs) {
 
   const fmtYAxis = d => `${d >= 100 ? "+" : ""}${(d - 100).toFixed(0)}%`;
 
-  // Grid + axes (fixed — no dynamic updates)
-  svg.append("g").attr("class", "grid").call(d3.axisLeft(y).ticks(5).tickSize(-width).tickFormat(""));
+  // Grid + axes (updated dynamically when active set changes)
+  const gridG = svg.append("g").attr("class", "grid").call(d3.axisLeft(y).ticks(5).tickSize(-width).tickFormat(""));
   svg.append("g").attr("class", "axis").attr("transform", `translate(0,${height})`)
     .call(d3.axisBottom(x).ticks(d3.timeYear.every(1)));
-  svg.append("g").attr("class", "axis").call(d3.axisLeft(y).ticks(5).tickFormat(fmtYAxis));
+  const yAxisG = svg.append("g").attr("class", "axis").call(d3.axisLeft(y).ticks(5).tickFormat(fmtYAxis));
   svg.append("text").attr("transform", "rotate(-90)")
     .attr("y", -40).attr("x", -height / 2).attr("text-anchor", "middle")
     .style("fill", "#8b949e").style("font-size", "11px").text("% Change from Start");
@@ -580,6 +580,35 @@ function renderStockChart(stockData, layoffs) {
       cursorDots[t].style("display", vis ? null : "none");
       cursorLabels[t].style("display", vis ? null : "none");
     });
+
+    // Recalculate y domain from only visible tickers
+    const activeVals = [];
+    normalized.forEach((v, t) => {
+      if (active.has(t)) v.forEach(d => activeVals.push(d.value));
+    });
+    if (activeVals.length === 0) return;
+    const newMin = d3.min(activeVals);
+    const newMax = d3.max(activeVals);
+    const newPad = (newMax - newMin) * 0.05;
+    y.domain([newMin - newPad, newMax + newPad]);
+
+    // Redraw axis and grid with transition
+    yAxisG.transition().duration(400).call(d3.axisLeft(y).ticks(5).tickFormat(fmtYAxis));
+    gridG.transition().duration(400).call(d3.axisLeft(y).ticks(5).tickSize(-width).tickFormat(""));
+
+    // Redraw all line paths with new scale
+    tickers.forEach(t => {
+      svg.selectAll(`.line-${t}`).transition().duration(400).attr("d", lineGen);
+      svg.selectAll(`.future-${t}`).transition().duration(400).attr("d", lineGen);
+    });
+
+    // Redraw layoff markers
+    svg.selectAll(".layoff-marker")
+      .transition().duration(400)
+      .attr("cy", d => y(d.yVal));
+
+    // Re-fire time listeners to reposition cursor dots at new scale
+    timeListeners.forEach(fn => fn(currentTime));
   }
 
   // Listen to global time changes
