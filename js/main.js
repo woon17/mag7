@@ -965,11 +965,29 @@ function renderCapexChart(capex) {
   const x1 = d3.scaleBand().domain(showTickers).range([0, x0.bandwidth()]).padding(0.05);
   const y = d3.scaleLinear().domain([0, d3.max(filtered, d => d.val) * 1.1]).range([height, 0]);
 
-  svg.append("g").attr("class", "grid").call(d3.axisLeft(y).ticks(4).tickSize(-width).tickFormat(""));
+  const capexGridG = svg.append("g").attr("class", "grid").call(d3.axisLeft(y).ticks(4).tickSize(-width).tickFormat(""));
   svg.append("g").attr("class", "axis").attr("transform", `translate(0,${height})`)
     .call(d3.axisBottom(x0).tickValues(quarters.filter((_, i) => i % 3 === 0)))
     .selectAll("text").attr("transform", "rotate(-35)").style("text-anchor", "end").style("font-size", "9px");
-  svg.append("g").attr("class", "axis").call(d3.axisLeft(y).ticks(4).tickFormat(fmtBillions));
+  const capexYAxisG = svg.append("g").attr("class", "axis").call(d3.axisLeft(y).ticks(4).tickFormat(fmtBillions));
+
+  // Recalculate y domain from currently visible bars and rescale
+  function updateCapexYAxis() {
+    const visibleVals = [];
+    svg.selectAll(".capex-bar").each(function() {
+      const bar = d3.select(this);
+      if (bar.style("display") !== "none") {
+        visibleVals.push(+bar.attr("data-val"));
+      }
+    });
+    if (visibleVals.length === 0) return;
+    y.domain([0, d3.max(visibleVals) * 1.1]);
+    capexYAxisG.transition().duration(400).call(d3.axisLeft(y).ticks(4).tickFormat(fmtBillions));
+    capexGridG.transition().duration(400).call(d3.axisLeft(y).ticks(4).tickSize(-width).tickFormat(""));
+    svg.selectAll(".capex-bar").transition().duration(400)
+      .attr("y",      function() { return y(+d3.select(this).attr("data-val")); })
+      .attr("height", function() { return height - y(+d3.select(this).attr("data-val")); });
+  }
 
   // Group by quarter
   const grouped = d3.group(filtered, d => d.calendar_quarter);
@@ -984,6 +1002,7 @@ function renderCapexChart(capex) {
         .attr("class", "capex-bar")
         .attr("data-ticker", d.ticker)
         .attr("data-quarter-date", qDate.toISOString())
+        .attr("data-val", d.val)
         .attr("x", x0(q) + x1(d.ticker))
         .attr("y", y(d.val))
         .attr("width", x1.bandwidth())
@@ -1011,13 +1030,12 @@ function renderCapexChart(capex) {
       const bar = d3.select(this);
       const barTicker = bar.attr("data-ticker");
       if (showingAll) {
-        // Show all
         bar.style("display", null);
       } else {
-        // Show only selected
         bar.style("display", selectedCompanies.has(barTicker) ? null : "none");
       }
     });
+    updateCapexYAxis();
   });
 
   // Time cursor line on capex chart
@@ -1054,7 +1072,8 @@ function renderCapexChart(capex) {
       const companyOk = showingAll || selectedCompanies.has(ticker);
       bar.style("display", inYear && companyOk ? null : "none");
     });
-    // Re-trigger time listener so opacity is set correctly
+    // Rescale y-axis to visible bars, then re-trigger time for opacity
+    updateCapexYAxis();
     timeListeners.forEach(fn => fn(currentTime));
   });
 }
