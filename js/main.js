@@ -4,8 +4,13 @@
 // ============================================
 
 const COLORS = {
-  AMZN: "#ff9900", GOOGL: "#4285f4", META: "#0668E1",
-  MSFT: "#00a4ef", TSLA: "#cc0000", AAPL: "#a2aaad", NVDA: "#76b900"
+  AAPL: "#f0f0f0", // bright silver — Apple grey kept visible on dark bg
+  AMZN: "#ff9900", // Amazon orange — unchanged, distinct
+  GOOGL: "#34a853", // Google green — avoids blue clash with MSFT/META
+  META: "#e040fb", // purple — moves Meta off blue entirely
+  MSFT: "#00a4ef", // Microsoft blue — now the sole blue
+  NVDA: "#76b900", // Nvidia green — unchanged
+  TSLA: "#ff3d3d", // bright red — Tesla, more visible than dark #cc0000
 };
 const COMPANY_NAMES = {
   AMZN: "Amazon", GOOGL: "Google", META: "Meta",
