@@ -369,8 +369,8 @@ function renderStockChart(stockData, layoffs) {
   const x = d3.scaleTime().domain([TIME_START, TIME_END]).range([0, width]);
   const allVals = [];
   normalized.forEach(v => v.forEach(d => allVals.push(d.value)));
-  const yMin = d3.min(allVals);
-  const yMax = d3.max(allVals);
+  const yMin = Math.min(d3.min(allVals), 100); // always include 0%
+  const yMax = Math.max(d3.max(allVals), 100); // always include 0%
   const yPad = (yMax - yMin) * 0.05;
   const y = d3.scaleLinear().domain([yMin - yPad, yMax + yPad]).range([height, 0]);
 
@@ -480,6 +480,27 @@ function renderStockChart(stockData, layoffs) {
     document.getElementById("timeline-range").style.width = ((p1 - p0) * 100) + "%";
     d3.select("#range-start-date").text(fmtMonthYear(t0));
     d3.select("#current-date").text(fmtMonthYear(t1));
+
+    // Avoid label overlap: when cursors are close, flip labels outward
+    const OVERLAP_THRESHOLD = 130; // px — approx width of two date labels
+    const startLabel = document.getElementById("range-start-date");
+    const endLabel   = document.getElementById("current-date");
+    if ((p1 - p0) * tw < OVERLAP_THRESHOLD) {
+      // Start label: anchor to right edge (appears to the left of cursor)
+      startLabel.style.left      = "auto";
+      startLabel.style.right     = "calc(100% + 4px)";
+      startLabel.style.transform = "none";
+      // End label: anchor to left edge (appears to the right of cursor)
+      endLabel.style.left      = "calc(100% + 4px)";
+      endLabel.style.transform = "none";
+    } else {
+      // Restore default centered positioning
+      startLabel.style.left      = "50%";
+      startLabel.style.right     = "";
+      startLabel.style.transform = "translateX(-50%)";
+      endLabel.style.left      = "50%";
+      endLabel.style.transform = "translateX(-50%)";
+    }
   }
 
   // D3 brush — always active; drawing a rectangle auto-enters compare mode
