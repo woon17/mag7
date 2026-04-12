@@ -489,8 +489,8 @@ function renderStockChart(stockData, layoffs) {
 
   const clipArea = svg.append("g").attr("clip-path", "url(#stock-clip)");
 
-  // Use normalized directly — no rebasing
-  const currentData = normalized;
+  // currentData is rebased to TIME_START when a year filter is active
+  let currentData = normalized;
 
   // Full lines (faded) as background reference
   const lineGen = d3.line().x(d => x(d.date)).y(d => y(d.value)).curve(d3.curveMonotoneX);
@@ -545,7 +545,7 @@ function renderStockChart(stockData, layoffs) {
   const cursorLine = svg.append("line").attr("class", "time-cursor")
     .attr("y1", 0).attr("y2", height).attr("x1", width).attr("x2", width);
 
-  // Price dots on cursor
+  // Price dots on cursor (end / right cursor)
   const cursorDots = {};
   const cursorLabels = {};
   tickers.forEach(t => {
@@ -556,13 +556,95 @@ function renderStockChart(stockData, layoffs) {
       .attr("pointer-events", "none");
   });
 
+  // Price dots on start cursor (left cursor — compare mode only)
+  const startDots = {};
+  const startLabels = {};
+  tickers.forEach(t => {
+    startDots[t] = svg.append("circle").attr("class", "cursor-dot")
+      .attr("r", 4).attr("fill", COLORS[t]).attr("stroke", "#0d1117").attr("stroke-width", 1.5)
+      .style("display", "none");
+    startLabels[t] = svg.append("text")
+      .style("fill", COLORS[t]).style("font-size", "10px").style("font-weight", "600")
+      .attr("text-anchor", "end").attr("pointer-events", "none")
+      .style("display", "none");
+  });
+
   const bisect = d3.bisector(d => d.date).left;
+
+  // Rebase all normalized values so that the given baseDate = 0% (value 100)
+  function rebaseCurrentData(baseDate) {
+    if (baseDate === null) {
+      // "All years" — restore original normalization
+      currentData = normalized;
+    } else {
+      const rebased = new Map();
+      normalized.forEach((values, ticker) => {
+        const bi = Math.max(0, bisect(values, baseDate, 1) - 1);
+        const baseVal = values[Math.min(bi, values.length - 1)].value;
+        rebased.set(ticker, values.map(d => ({
+          date: d.date, close: d.close,
+          value: (d.value / baseVal) * 100
+        })));
+      });
+      currentData = rebased;
+    }
+    // Update path datums so lineGen picks up the new values
+    tickers.forEach(t => {
+      svg.selectAll(`.line-${t}`).datum(currentData.get(t));
+      svg.selectAll(`.future-${t}`).datum(currentData.get(t));
+    });
+  }
 
   // Get close price for a ticker at a given date
   function getCloseAtTime(ticker, t) {
     const data = normalized.get(ticker);
     const i = Math.max(0, bisect(data, t, 1) - 1);
     return data[Math.min(i, data.length - 1)].close;
+  }
+
+  // Show price dots + labels at the start (left) cursor in compare mode
+  function updateStartCursorLabels(t0) {
+    if (!compareMode) {
+      tickers.forEach(t => {
+        startDots[t].style("display", "none");
+        startLabels[t].style("display", "none");
+      });
+      return;
+    }
+    const cx0 = x(t0);
+    const labelPositions = [];
+    tickers.forEach(ticker => {
+      if (!active.has(ticker)) {
+        startDots[ticker].style("display", "none");
+        startLabels[ticker].style("display", "none");
+        return;
+      }
+      const data = currentData.get(ticker);
+      // Use same floor lookup as getCloseAtTime so price matches the compare panel
+      const i = Math.max(0, bisect(data, t0, 1) - 1);
+      const d = data[Math.min(i, data.length - 1)];
+      if (!d) {
+        startDots[ticker].style("display", "none");
+        startLabels[ticker].style("display", "none");
+        return;
+      }
+      startDots[ticker].style("display", null)
+        .attr("cx", cx0).attr("cy", y(d.value));
+      labelPositions.push({ ticker, yPos: y(d.value), value: d.value, close: d.close });
+    });
+
+    // Avoid overlap — same stacking as end labels
+    labelPositions.sort((a, b) => a.yPos - b.yPos);
+    for (let i = 1; i < labelPositions.length; i++) {
+      if (labelPositions[i].yPos - labelPositions[i - 1].yPos < 12)
+        labelPositions[i].yPos = labelPositions[i - 1].yPos + 12;
+    }
+    labelPositions.forEach(lp => {
+      // Left cursor is the reference — show price only, no % (avoids confusion with range %)
+      startLabels[lp.ticker].style("display", null)
+        .attr("x", cx0 - 8).attr("y", lp.yPos + 4)
+        .text(`$${lp.close.toFixed(1)}`);
+    });
   }
 
   // Sync timeline bar cursors to reflect brush selection
@@ -612,8 +694,6 @@ function renderStockChart(stockData, layoffs) {
       if (!compareMode) {
         compareMode = true;
         document.getElementById("timeline-bar").classList.add("compare-active");
-        // Hide any residual cursor labels left from scrub mode
-        tickers.forEach(t => cursorLabels[t].style("display", "none"));
       }
       rangeStartLine.attr("x1", x0).attr("x2", x0);
       cursorLine.attr("x1", x1).attr("x2", x1);
@@ -623,6 +703,7 @@ function renderStockChart(stockData, layoffs) {
       rangeStartTime = t0;
       currentTime    = t1;
       timeListeners.forEach(fn => fn(t1));
+      updateStartCursorLabels(t0);
       updateComparePanel();
     })
     .on("end", ({ selection }) => {
@@ -635,6 +716,11 @@ function renderStockChart(stockData, layoffs) {
         d3.select("#stock-clip-rect").attr("x", 0).attr("width", x(currentTime));
         rangeStartLine.attr("x1", x(TIME_START)).attr("x2", x(TIME_START));
         cursorLine.attr("x1", x(currentTime)).attr("x2", x(currentTime));
+        // Hide start-cursor labels
+        tickers.forEach(t => {
+          startDots[t].style("display", "none");
+          startLabels[t].style("display", "none");
+        });
         // Restore CapEx and Layoff to full-timeline view
         timeListeners.forEach(fn => fn(currentTime));
         return;
@@ -650,6 +736,7 @@ function renderStockChart(stockData, layoffs) {
   function onRangeStartChange() {
     rangeStartLine.attr("x1", x(rangeStartTime)).attr("x2", x(rangeStartTime));
     setGlobalTime(currentTime); // re-fires timeListeners to update clip bounds
+    updateStartCursorLabels(rangeStartTime);
     updateComparePanel();
   }
   rangeListeners.push(onRangeStartChange);
@@ -706,9 +793,9 @@ function renderStockChart(stockData, layoffs) {
       cursorLabels[t].style("display", vis ? null : "none");
     });
 
-    // Recalculate y domain from only visible tickers within the current time window
+    // Recalculate y domain from rebased currentData within the visible time window
     const activeVals = [];
-    normalized.forEach((v, t) => {
+    currentData.forEach((v, t) => {
       if (active.has(t)) {
         v.filter(d => d.date >= TIME_START && d.date <= TIME_END)
          .forEach(d => activeVals.push(d.value));
@@ -731,13 +818,20 @@ function renderStockChart(stockData, layoffs) {
       svg.selectAll(`.future-${t}`).transition().duration(400).attr("d", lineGen);
     });
 
-    // Redraw layoff markers — named transition so it doesn't interrupt "marker-x"
+    // Redraw layoff markers using rebased currentData for cy
     svg.selectAll(".layoff-marker")
       .transition("marker-y").duration(400)
-      .attr("cy", d => y(d.yVal));
+      .attr("cy", d => {
+        const vals = currentData.get(d.ticker);
+        if (!vals) return 0;
+        const bi = Math.max(0, bisect(vals, d.date, 1) - 1);
+        return y(vals[Math.min(bi, vals.length - 1)].value);
+      });
 
     // Re-fire time listeners to reposition cursor dots at new scale
     timeListeners.forEach(fn => fn(currentTime));
+    // Re-position start cursor labels at new scale
+    updateStartCursorLabels(rangeStartTime);
   }
 
   // Zoom the stock chart when year filter changes
@@ -757,15 +851,14 @@ function renderStockChart(stockData, layoffs) {
     cursorLine.attr("x1", x(endDate)).attr("x2", x(endDate));
     rangeStartLine.attr("x1", x(startDate)).attr("x2", x(startDate));
     d3.select("#stock-clip-rect").attr("x", 0).attr("width", x(endDate));
-    // Recalculate y domain + axis first (updateLines sets new y scale)
+    // Rebase to year start (or original baseline for All years)
+    rebaseCurrentData(activeYear !== null ? startDate : null);
+    // Recalculate y domain, redraw axis and lines (updateLines handles marker-y)
     updateLines();
-    // Reposition markers with both new x and y scales — named transitions don't conflict
+    // Reposition marker x with new scale (y handled inside updateLines)
     svg.selectAll(".layoff-marker")
       .transition("marker-x").duration(400)
       .attr("cx", d => x(d.date));
-    svg.selectAll(".layoff-marker")
-      .transition("marker-y").duration(400)
-      .attr("cy", d => y(d.yVal));
   });
 
   // Listen to global time changes
@@ -784,17 +877,10 @@ function renderStockChart(stockData, layoffs) {
     tickers.forEach(ticker => {
       if (!active.has(ticker)) return;
       const data = currentData.get(ticker);
-      const i = bisect(data, t, 1);
-      if (i === 0 || i >= data.length) {
-        cursorDots[ticker].style("display", "none");
-        cursorLabels[ticker].style("display", "none");
-        return;
-      }
-      const d0 = data[i - 1], d1 = data[i];
-      const d = (t - d0.date > d1.date - t) ? d1 : d0;
-
-      // Only show if date is before cursor
-      if (d.date > t) {
+      // Floor lookup — same as getCloseAtTime so price matches compare panel
+      const i = Math.max(0, bisect(data, t, 1) - 1);
+      const d = data[Math.min(i, data.length - 1)];
+      if (!d || d.date > t) {
         cursorDots[ticker].style("display", "none");
         cursorLabels[ticker].style("display", "none");
         return;
@@ -815,11 +901,23 @@ function renderStockChart(stockData, layoffs) {
     }
 
     labelPositions.forEach(lp => {
-      const pctChange = (lp.value - 100).toFixed(0);
-      const sign = pctChange >= 0 ? "+" : "";
-      cursorLabels[lp.ticker].style("display", compareMode ? "none" : null)
+      let labelText;
+      if (compareMode) {
+        // Show % change within the selected range — matches the compare panel
+        const startClose = getCloseAtTime(lp.ticker, rangeStartTime);
+        const rangePct = ((lp.close - startClose) / startClose * 100).toFixed(1);
+        const sign = rangePct >= 0 ? "+" : "";
+        labelText = `$${lp.close.toFixed(1)} (${sign}${rangePct}%)`;
+      } else {
+        // Scrub mode: % from the original dataset baseline — matches the y-axis gridlines
+        const pctChange = (lp.value - 100).toFixed(1);
+        const sign = pctChange >= 0 ? "+" : "";
+        labelText = `$${lp.close.toFixed(1)} (${sign}${pctChange}%)`;
+      }
+      cursorLabels[lp.ticker].style("display", null)
+        .attr("text-anchor", "start")
         .attr("x", cx + 8).attr("y", lp.yPos + 4)
-        .text(`$${lp.close.toFixed(1)} (${sign}${pctChange}%)`);
+        .text(labelText);
     });
   });
 }
