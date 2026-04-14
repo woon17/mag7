@@ -13,12 +13,13 @@
 
   <!-- Top bar -->
   <header>
-    <h1>The Magnificent 7 — Tech Layoffs & Financial Impact</h1>
-    <div class="header-filters">
-      <div id="company-filter" class="company-filter"></div>
-      <div class="filter-section-divider"></div>
-      <div id="year-filter" class="year-filter"></div>
+    <div class="header-row1">
+      <h1>The Magnificent 7 — Tech Layoffs & Financial Impact</h1>
+      <div class="header-filters">
+        <div id="company-filter" class="company-filter"></div>
+      </div>
     </div>
+    <div id="year-filter" class="year-filter"></div>
   </header>
 
   <!-- Main dashboard — all in one screen -->
@@ -28,6 +29,12 @@
     <div class="panel panel-main">
       <div class="panel-header">
         <h2>Stock Performance</h2>
+        <div id="normalize-btns" class="normalize-btns">
+          <span class="normalize-label">Normalize:</span>
+          <button class="norm-btn active" data-norm="none">Off</button>
+          <button class="norm-btn" data-norm="SPX">vs S&amp;P 500</button>
+          <button class="norm-btn" data-norm="QQQ">vs Nasdaq-100</button>
+        </div>
         <div class="legend" id="stock-legend"></div>
       </div>
       <div id="stock-chart">

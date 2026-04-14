@@ -12,13 +12,19 @@ body {
 
 /* ========== HEADER ========== */
 header {
-  padding: 12px 24px;
+  padding: 8px 24px;
   background: #161b22;
   border-bottom: 1px solid #21262d;
   display: flex;
-  align-items: baseline;
-  gap: 20px;
+  flex-direction: column;
+  gap: 6px;
   flex-shrink: 0;
+}
+
+.header-row1 {
+  display: flex;
+  align-items: center;
+  gap: 20px;
 }
 
 header h1 {
@@ -36,7 +42,7 @@ header h1 {
 .header-filters {
   display: flex;
   flex-direction: row;
-  gap: 16px;
+  gap: 6px;
   align-items: center;
   flex-wrap: nowrap;
 }
@@ -48,6 +54,7 @@ header h1 {
   gap: 4px;
   flex-wrap: nowrap;
   white-space: nowrap;
+  padding-left: 2px;
 }
 
 .year-filter-label {
@@ -220,6 +227,46 @@ header h1 {
   font-size: 0.95rem;
   color: #f0f6fc;
   white-space: nowrap;
+}
+
+/* ========== NORMALIZE BUTTONS ========== */
+.normalize-btns {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.normalize-label {
+  color: #8b949e;
+  font-size: 0.72rem;
+  white-space: nowrap;
+  margin-right: 2px;
+}
+
+.norm-btn {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid #30363d;
+  border-radius: 4px;
+  color: #8b949e;
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 2px 8px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+
+.norm-btn:hover {
+  background: rgba(88, 166, 255, 0.12);
+  border-color: #58a6ff;
+  color: #c9d1d9;
+}
+
+.norm-btn.active {
+  background: rgba(88, 166, 255, 0.2);
+  border-color: #58a6ff;
+  color: #58a6ff;
 }
 
 /* ========== LEGEND ========== */

@@ -465,10 +465,66 @@ function renderStockChart(stockData, layoffs) {
   const x = d3.scaleTime().domain([TIME_START, TIME_END]).range([0, width]);
   const allVals = [];
   normalized.forEach(v => v.forEach(d => allVals.push(d.value)));
-  const yMin = Math.min(d3.min(allVals), 100); // always include 0%
-  const yMax = Math.max(d3.max(allVals), 100); // always include 0%
+  const yMin = Math.min(d3.min(allVals), 100);
+  const yMax = Math.max(d3.max(allVals), 100);
   const yPad = (yMax - yMin) * 0.05;
-  const y = d3.scaleLinear().domain([yMin - yPad, yMax + yPad]).range([height, 0]);
+  let y = d3.scaleLinear().domain([yMin - yPad, yMax + yPad]).range([height, 0]);
+
+  // ── Benchmark normalization state ──
+  let normBenchmark = "none"; // "none" | "SPX" | "QQQ"
+
+  // Build benchmark-relative data: each value = (company rebased) / (benchmark rebased) * 100
+  function buildNormalized(baseData, benchmark) {
+    if (benchmark === "none") return baseData;
+    const benchData = baseData.get(benchmark);
+    if (!benchData) return baseData;
+    // Build a lookup: date string → benchmark rebased value
+    const benchMap = new Map(benchData.map(d => [d.date.getTime(), d.value]));
+    const result = new Map();
+    baseData.forEach((vals, t) => {
+      result.set(t, vals.map(d => {
+        const bVal = benchMap.get(d.date.getTime());
+        const relValue = bVal ? (d.value / bVal) * 100 : d.value;
+        return { date: d.date, value: relValue, close: d.close };
+      }));
+    });
+    return result;
+  }
+
+  // Helper — push currentData values into the bound SVG datums so lineGen uses fresh data
+  function flushDataToDatums() {
+    tickers.forEach(t => {
+      svg.selectAll(`.line-${t}`).datum(currentData.get(t));
+      svg.selectAll(`.future-${t}`).datum(currentData.get(t));
+    });
+  }
+
+  // Normalize buttons
+  document.querySelectorAll(".norm-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      normBenchmark = btn.dataset.norm;
+      document.querySelectorAll(".norm-btn").forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+      // Rebuild currentData, flush to datums so lines + dots use same data
+      currentData = buildNormalized(normalized, normBenchmark);
+      flushDataToDatums();
+      yAxisLabel.text(normBenchmark === "none"
+        ? "% Change from Start"
+        : `Excess Return vs ${normBenchmark === "SPX" ? "S&P 500" : "Nasdaq-100"}`);
+      // In normalized mode, hide the benchmark line (it would just sit flat on the 0% baseline)
+      // and relabel the zero line instead
+      tickers.forEach(t => {
+        if (normBenchmark !== "none" && t === normBenchmark) {
+          svg.selectAll(`.line-${t}`).style("opacity", 0);
+          svg.selectAll(`.future-${t}`).style("opacity", 0);
+        }
+      });
+      zeroLineLabel.text(normBenchmark === "none"
+        ? ""
+        : `← ${normBenchmark === "SPX" ? "S&P 500" : "Nasdaq-100"} baseline (0%)`);
+      updateLines();
+    });
+  });
 
   const fmtYAxis = d => `${d >= 100 ? "+" : ""}${(d - 100).toFixed(0)}%`;
 
@@ -488,12 +544,17 @@ function renderStockChart(stockData, layoffs) {
     .call(d3.axisBottom(x).ticks(d3.timeYear.every(1)).tickFormat(d3.timeFormat("%Y")));
   const yAxisG = svg.append("g").attr("class", "axis").call(d3.axisLeft(y).tickValues(yTickValues(y)).tickFormat(fmtYAxis));
 
-  // Persistent 0% baseline
+  // Persistent 0% baseline + label (relabelled when normalization is active)
   const zeroLine = svg.append("line").attr("class", "zero-line")
     .attr("x1", 0).attr("x2", width)
     .attr("y1", y(100)).attr("y2", y(100));
 
-  svg.append("text").attr("transform", "rotate(-90)")
+  const zeroLineLabel = svg.append("text")
+    .attr("x", 4).attr("y", y(100) - 4)
+    .style("fill", "#8b949e").style("font-size", "9px").style("font-style", "italic")
+    .text("");
+
+  const yAxisLabel = svg.append("text").attr("transform", "rotate(-90)")
     .attr("y", -40).attr("x", -height / 2).attr("text-anchor", "middle")
     .style("fill", "#8b949e").style("font-size", "11px").text("% Change from Start");
 
@@ -504,7 +565,7 @@ function renderStockChart(stockData, layoffs) {
 
   const clipArea = svg.append("g").attr("clip-path", "url(#stock-clip)");
 
-  // currentData is rebased to TIME_START when a year filter is active
+  // currentData is rebased to TIME_START when a year filter is active, or benchmark-normalized
   let currentData = normalized;
 
   // Full lines (faded) as background reference
@@ -524,18 +585,15 @@ function renderStockChart(stockData, layoffs) {
       .attr("stroke-dasharray", BENCHMARKS.has(t) ? "6 3" : null);
   });
 
-  // Layoff markers
+  // Layoff markers — bisect defined below, so we defer yVal computation to updateLines
   const markerData = layoffs.map(d => {
-    const tickerData = normalized.get(d.ticker);
-    if (!tickerData) return null;
-    const closest = tickerData.reduce((prev, curr) =>
-      Math.abs(curr.date - d.date) < Math.abs(prev.date - d.date) ? curr : prev);
-    return { ...d, yVal: closest.value };
+    if (!normalized.get(d.ticker)) return null;
+    return { ...d };
   }).filter(Boolean);
 
   clipArea.selectAll(".layoff-marker").data(markerData).enter()
     .append("circle").attr("class", d => `layoff-marker marker-${d.ticker}`)
-    .attr("cx", d => x(d.date)).attr("cy", d => y(d.yVal))
+    .attr("cx", d => x(d.date)).attr("cy", height / 2)
     .attr("r", 7).attr("fill", d => COLORS[d.ticker])
     .attr("stroke", "#f0f6fc").attr("stroke-width", 2).attr("opacity", 0.9)
     .on("mouseover", (event, d) => {
@@ -588,11 +646,19 @@ function renderStockChart(stockData, layoffs) {
 
   const bisect = d3.bisector(d => d.date).left;
 
+  // Return the value of the data point in vals closest in time to targetDate
+  function nearestValue(vals, targetDate) {
+    const i = bisect(vals, targetDate, 1);
+    const prev = vals[Math.max(0, i - 1)];
+    const next = vals[Math.min(i, vals.length - 1)];
+    const usePrev = !next || Math.abs(prev.date - targetDate) <= Math.abs(next.date - targetDate);
+    return (usePrev ? prev : next).value;
+  }
+
   // Rebase all normalized values so that the given baseDate = 0% (value 100)
   function rebaseCurrentData(baseDate) {
     if (baseDate === null) {
-      // "All years" — restore original normalization
-      currentData = normalized;
+      currentData = buildNormalized(normalized, normBenchmark);
     } else {
       const rebased = new Map();
       normalized.forEach((values, ticker) => {
@@ -603,13 +669,10 @@ function renderStockChart(stockData, layoffs) {
           value: (d.value / baseVal) * 100
         })));
       });
-      currentData = rebased;
+      currentData = buildNormalized(rebased, normBenchmark);
     }
     // Update path datums so lineGen picks up the new values
-    tickers.forEach(t => {
-      svg.selectAll(`.line-${t}`).datum(currentData.get(t));
-      svg.selectAll(`.future-${t}`).datum(currentData.get(t));
-    });
+    flushDataToDatums();
   }
 
   // Get close price for a ticker at a given date
@@ -819,15 +882,16 @@ function renderStockChart(stockData, layoffs) {
       }
     });
     if (activeVals.length === 0) return;
-    const newMin = Math.min(d3.min(activeVals), 100); // always include 0%
-    const newMax = Math.max(d3.max(activeVals), 100); // always include 0%
+    const newMin = Math.min(d3.min(activeVals), 100);
+    const newMax = Math.max(d3.max(activeVals), 100);
     const newPad = (newMax - newMin) * 0.05;
-    y.domain([newMin - newPad, newMax + newPad]);
+    y = d3.scaleLinear().domain([newMin - newPad, newMax + newPad]).range([height, 0]);
 
     // Redraw axis, grid, and zero line with transition
     yAxisG.transition().duration(400).call(d3.axisLeft(y).tickValues(yTickValues(y)).tickFormat(fmtYAxis));
     gridG.transition().duration(400).call(d3.axisLeft(y).tickValues(yTickValues(y)).tickSize(-width).tickFormat(""));
     zeroLine.transition().duration(400).attr("y1", y(100)).attr("y2", y(100));
+    zeroLineLabel.transition().duration(400).attr("y", y(100) - 4);
 
     // Redraw all line paths with new scale
     tickers.forEach(t => {
@@ -841,8 +905,7 @@ function renderStockChart(stockData, layoffs) {
       .attr("cy", d => {
         const vals = currentData.get(d.ticker);
         if (!vals) return 0;
-        const bi = Math.max(0, bisect(vals, d.date, 1) - 1);
-        return y(vals[Math.min(bi, vals.length - 1)].value);
+        return y(nearestValue(vals, d.date));
       });
 
     // Re-fire time listeners to reposition cursor dots at new scale
@@ -1120,18 +1183,15 @@ function renderLayoffPanel(layoffs) {
       .text(`${fmtDate(d.date)} · ${fmtPct(d.percentage)} of workforce`);
   });
 
-  // Listen to filter changes
+  // Listen to filter changes — must also respect the active year range
   filterListeners.push(() => {
     panel.selectAll(".layoff-card").each(function () {
       const card = d3.select(this);
       const cardTicker = card.attr("data-ticker");
-      if (showingAll) {
-        // Show all
-        card.style("display", null);
-      } else {
-        // Show only selected
-        card.style("display", selectedCompanies.has(cardTicker) ? null : "none");
-      }
+      const cardDate = new Date(card.attr("data-date"));
+      const companyOk = showingAll || selectedCompanies.has(cardTicker);
+      const inYear = cardDate >= TIME_START && cardDate <= TIME_END;
+      card.style("display", companyOk && inYear ? null : "none");
     });
   });
 
