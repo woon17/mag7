@@ -435,6 +435,7 @@ function renderStockChart(stockData, layoffs) {
       });
     }
     updateLines();
+    updateComparePanel();
   });
 
   // Add data-ticker attribute to legend items
