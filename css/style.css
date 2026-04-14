@@ -35,17 +35,19 @@ header h1 {
 /* ========== HEADER FILTERS WRAPPER ========== */
 .header-filters {
   display: flex;
-  flex-direction: column;
-  gap: 6px;
-  align-items: flex-start;
+  flex-direction: row;
+  gap: 16px;
+  align-items: center;
+  flex-wrap: nowrap;
 }
 
 /* ========== YEAR FILTER ========== */
 .year-filter {
   display: flex;
   align-items: center;
-  gap: 6px;
-  flex-wrap: wrap;
+  gap: 4px;
+  flex-wrap: nowrap;
+  white-space: nowrap;
 }
 
 .year-filter-label {
@@ -81,8 +83,8 @@ header h1 {
 /* ========== COMPANY FILTER ========== */
 .company-filter {
   display: flex;
-  gap: 12px;
-  flex-wrap: wrap;
+  gap: 4px;
+  flex-wrap: nowrap;
   align-items: center;
 }
 
@@ -95,13 +97,14 @@ header h1 {
 .filter-checkbox-label {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 4px;
   cursor: pointer;
-  font-size: 0.85rem;
+  font-size: 0.78rem;
   user-select: none;
-  padding: 4px 8px;
+  padding: 2px 5px;
   border-radius: 4px;
   transition: background 0.2s;
+  white-space: nowrap;
 }
 
 .filter-checkbox-label:hover {
@@ -110,13 +113,36 @@ header h1 {
 
 .filter-checkbox-label input[type="checkbox"] {
   cursor: pointer;
-  width: 18px;
-  height: 18px;
-  accent-color: #58a6ff;
+  width: 13px;
+  height: 13px;
+  flex-shrink: 0;
 }
 
 .filter-checkbox-label .checkbox-text {
   color: #c9d1d9;
+}
+
+/* divider between individual company filter items and benchmark label */
+.filter-divider {
+  color: #444d56;
+  font-size: 1rem;
+  margin: 0 2px;
+  user-select: none;
+}
+
+/* vertical rule between the company-filter block and year-filter block */
+.filter-section-divider {
+  width: 1px;
+  height: 20px;
+  background: #30363d;
+  flex-shrink: 0;
+}
+
+.filter-benchmark-label {
+  color: #8b949e;
+  font-size: 0.8rem;
+  font-style: italic;
+  margin-right: 2px;
 }
 
 /* ========== TIME DISPLAY ========== */

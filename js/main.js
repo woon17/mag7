@@ -11,11 +11,15 @@ const COLORS = {
   MSFT: "#00a4ef", // Microsoft blue — now the sole blue
   NVDA: "#76b900", // Nvidia green — unchanged
   TSLA: "#ff3d3d", // bright red — Tesla, more visible than dark #cc0000
+  SPX:  "#ffd700", // gold — S&P 500 benchmark
+  QQQ:  "#00e5ff", // cyan — Nasdaq-100 benchmark
 };
 const COMPANY_NAMES = {
   AMZN: "Amazon", GOOGL: "Google", META: "Meta",
-  MSFT: "Microsoft", TSLA: "Tesla", AAPL: "Apple", NVDA: "Nvidia"
+  MSFT: "Microsoft", TSLA: "Tesla", AAPL: "Apple", NVDA: "Nvidia",
+  SPX: "S&P 500", QQQ: "Nasdaq-100",
 };
+const BENCHMARKS = new Set(["SPX", "QQQ"]);
 
 const tooltip = d3.select("#tooltip");
 const fmtDate = d3.timeFormat("%b %d, %Y");
@@ -187,8 +191,11 @@ function setupCompanyFilter(tickers) {
     .attr("class", "checkbox-text")
     .text("All Companies");
 
-  // Individual company checkboxes
-  tickers.forEach(t => {
+  // Individual company checkboxes — companies first, then benchmarks with a divider
+  const mag7Tickers = tickers.filter(t => !BENCHMARKS.has(t));
+  const benchmarkTickers = tickers.filter(t => BENCHMARKS.has(t));
+
+  const addCheckbox = (t) => {
     const label = container.append("label")
       .attr("class", "filter-checkbox-label")
       .attr("id", `label-${t}`);
@@ -197,6 +204,7 @@ function setupCompanyFilter(tickers) {
       .attr("type", "checkbox")
       .attr("class", "company-checkbox")
       .attr("id", `checkbox-${t}`)
+      .style("accent-color", COLORS[t])
       .on("change", () => {
         toggleCompanyFilter(t);
       });
@@ -205,7 +213,15 @@ function setupCompanyFilter(tickers) {
       .attr("class", "checkbox-text")
       .style("color", COLORS[t])
       .text(COMPANY_NAMES[t]);
-  });
+  };
+
+  mag7Tickers.forEach(addCheckbox);
+
+  if (benchmarkTickers.length > 0) {
+    container.append("span").attr("class", "filter-divider").text("│");
+    container.append("span").attr("class", "filter-benchmark-label").text("Benchmarks:");
+    benchmarkTickers.forEach(addCheckbox);
+  }
 
   // Update checkbox states whenever filter changes
   filterListeners.push(() => {
@@ -404,15 +420,13 @@ function renderStockChart(stockData, layoffs) {
     })));
   });
 
-  // Legend with toggle
+  // Legend with toggle — delegates to toggleCompanyFilter so header checkboxes stay in sync
   const legendEl = d3.select("#stock-legend");
   const active = new Set(tickers);
   tickers.forEach(t => {
     const item = legendEl.append("div").attr("class", "legend-item")
       .on("click", () => {
-        if (active.has(t)) active.delete(t); else active.add(t);
-        item.classed("disabled", !active.has(t));
-        updateLines();
+        toggleCompanyFilter(t);
       });
     item.append("div").attr("class", "legend-swatch").style("background", COLORS[t]);
     item.append("span").text(COMPANY_NAMES[t]);
@@ -498,14 +512,16 @@ function renderStockChart(stockData, layoffs) {
   tickers.forEach(t => {
     svg.insert("path", ":first-child").datum(normalized.get(t))
       .attr("class", `stock-line-future future-${t}`)
-      .attr("d", lineGen).attr("stroke", COLORS[t]);
+      .attr("d", lineGen).attr("stroke", COLORS[t])
+      .attr("stroke-dasharray", BENCHMARKS.has(t) ? "6 3" : null);
   });
 
   // Solid lines up to time cursor
   tickers.forEach(t => {
     clipArea.append("path").datum(normalized.get(t))
       .attr("class", `stock-line line-${t}`)
-      .attr("d", lineGen).attr("stroke", COLORS[t]);
+      .attr("d", lineGen).attr("stroke", COLORS[t])
+      .attr("stroke-dasharray", BENCHMARKS.has(t) ? "6 3" : null);
   });
 
   // Layoff markers
