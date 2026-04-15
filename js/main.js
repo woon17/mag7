@@ -395,6 +395,16 @@ Promise.all([
     setGlobalTime(t);
     trackCursor.style.left = (pct * trackRect.width - 1.5) + "px";
   });
+
+  // Shift+N: cycle normalize modes  Off → vs S&P 500 → vs Nasdaq-100 → Off
+  const normCycle = ["none", "SPX", "QQQ"];
+  document.addEventListener("keydown", (e) => {
+    if (e.shiftKey && e.key === "N") {
+      const current = document.querySelector(".norm-btn.active")?.dataset.norm ?? "none";
+      const next = normCycle[(normCycle.indexOf(current) + 1) % normCycle.length];
+      document.querySelector(`.norm-btn[data-norm="${next}"]`)?.click();
+    }
+  });
 });
 
 // ============================================
