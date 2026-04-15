@@ -589,20 +589,27 @@ function renderStockChart(stockData, layoffs) {
     .style("fill", "#8b949e").style("font-size", "11px").text("% Change from Start");
 
   // Clip path — reveals data up to current time
-  svg.append("defs").append("clipPath").attr("id", "stock-clip")
+  const defs = svg.append("defs");
+  defs.append("clipPath").attr("id", "stock-clip")
     .append("rect").attr("id", "stock-clip-rect")
     .attr("x", 0).attr("y", -5).attr("height", height + 10).attr("width", width);
+
+  // Bounds clip — keeps future lines within the chart area (prevents rendering before x=0)
+  defs.append("clipPath").attr("id", "stock-bounds-clip")
+    .append("rect")
+    .attr("x", 0).attr("y", -5).attr("width", width).attr("height", height + 10);
 
   const clipArea = svg.append("g").attr("clip-path", "url(#stock-clip)");
 
   // currentData is rebased to TIME_START when a year filter is active, or benchmark-normalized
   let currentData = normalized;
 
-  // Full lines (faded) as background reference
+  // Full lines (faded) as background reference — clipped to chart bounds so they don't bleed left
   const lineGen = d3.line().x(d => x(d.date)).y(d => y(d.value)).curve(d3.curveMonotoneX);
   tickers.forEach(t => {
     svg.insert("path", ":first-child").datum(normalized.get(t))
       .attr("class", `stock-line-future future-${t}`)
+      .attr("clip-path", "url(#stock-bounds-clip)")
       .attr("d", lineGen).attr("stroke", COLORS[t])
       .attr("stroke-dasharray", BENCHMARKS.has(t) ? "6 3" : null);
   });
