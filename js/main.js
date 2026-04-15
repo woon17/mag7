@@ -1129,9 +1129,9 @@ function renderCapexChart(capex, allTickers) {
   const y = d3.scaleLinear().domain([0, d3.max(filtered, d => d.val) * 1.1]).range([height, 0]);
 
   const capexGridG = svg.append("g").attr("class", "grid").call(d3.axisLeft(y).ticks(4).tickSize(-width).tickFormat(""));
-  svg.append("g").attr("class", "axis").attr("transform", `translate(0,${height})`)
-    .call(d3.axisBottom(x0).tickValues(quarters.filter((_, i) => i % 3 === 0)))
-    .selectAll("text").attr("transform", "rotate(-35)").style("text-anchor", "end").style("font-size", "9px");
+  const capexXAxisG = svg.append("g").attr("class", "axis").attr("transform", `translate(0,${height})`)
+    .call(d3.axisBottom(x0).tickValues(quarters.filter((_, i) => i % 3 === 0)));
+  capexXAxisG.selectAll("text").attr("transform", "rotate(-35)").style("text-anchor", "end").style("font-size", "9px");
   const capexYAxisG = svg.append("g").attr("class", "axis").call(d3.axisLeft(y).ticks(4).tickFormat(fmtBillions));
 
   // Recalculate y domain from currently visible bars and rescale
@@ -1164,6 +1164,7 @@ function renderCapexChart(capex, allTickers) {
       svg.append("rect")
         .attr("class", "capex-bar")
         .attr("data-ticker", d.ticker)
+        .attr("data-quarter", q)
         .attr("data-quarter-date", qDate.toISOString())
         .attr("data-val", d.val)
         .attr("x", x0(q) + x1(d.ticker))
@@ -1189,37 +1190,82 @@ function renderCapexChart(capex, allTickers) {
 
   // Listen to filter changes
   filterListeners.push(() => {
+    // Update x1 domain to only visible companies so bars fill the group evenly
+    const visibleTickers = showTickers.filter(t => showingAll || selectedCompanies.has(t));
+    x1.domain(visibleTickers.length > 0 ? visibleTickers : showTickers);
+
+    // Collect visible values to rescale y BEFORE transitioning bars
+    const visibleVals = [];
     svg.selectAll(".capex-bar").each(function () {
       const bar = d3.select(this);
       const barTicker = bar.attr("data-ticker");
-      const visible = showingAll || selectedCompanies.has(barTicker);
-      bar.style("display", visible ? null : "none");
+      const companyOk = showingAll || selectedCompanies.has(barTicker);
+      const qDate = new Date(bar.attr("data-quarter-date"));
+      const inYear = qDate >= TIME_START && qDate <= TIME_END;
+      if (companyOk && inYear) visibleVals.push(+bar.attr("data-val"));
     });
+
+    // Update y domain now so bar transitions use the correct y values
+    if (visibleVals.length > 0) {
+      y.domain([0, d3.max(visibleVals) * 1.1]);
+      capexYAxisG.transition().duration(400).call(d3.axisLeft(y).ticks(4).tickFormat(fmtBillions));
+      capexGridG.transition().duration(400).call(d3.axisLeft(y).ticks(4).tickSize(-width).tickFormat(""));
+    }
+
+    // Single transition per bar for all 4 attributes
+    svg.selectAll(".capex-bar").each(function () {
+      const bar = d3.select(this);
+      const barTicker = bar.attr("data-ticker");
+      const companyOk = showingAll || selectedCompanies.has(barTicker);
+      const qDate = new Date(bar.attr("data-quarter-date"));
+      const inYear = qDate >= TIME_START && qDate <= TIME_END;
+      const visible = companyOk && inYear;
+      bar.style("display", visible ? null : "none");
+      if (visible) {
+        const q = bar.attr("data-quarter");
+        const val = +bar.attr("data-val");
+        bar.transition().duration(400)
+          .attr("x", x0(q) + x1(barTicker))
+          .attr("y", y(val))
+          .attr("width", x1.bandwidth())
+          .attr("height", height - y(val));
+      }
+    });
+
     capexLegend.selectAll(".legend-item").each(function () {
       const item = d3.select(this);
       const t = item.attr("data-ticker");
       const selected = showingAll || selectedCompanies.has(t);
       const noData = item.attr("data-no-capex") === "1";
       item.classed("disabled", !selected);
-      // No-data items: dim further when not selected, full opacity when selected
       item.style("opacity", selected ? null : (noData ? 0.15 : null));
     });
-    updateCapexYAxis();
+
+    timeListeners.forEach(fn => fn(currentTime));
   });
 
   // Time cursor line on capex chart
   const capexCursor = svg.append("line").attr("class", "time-cursor")
     .attr("y1", 0).attr("y2", height);
 
-  // Map time to x position on capex chart
-  const capexTimeScale = d3.scaleTime()
-    .domain([quarterToDate(quarters[0]), quarterToDate(quarters[quarters.length - 1])])
-    .range([0, width]);
+  // Convert a date to the x position of its quarter in the current x0 scale
+  function dateToCapexX(t) {
+    const year = t.getFullYear();
+    const quarter = Math.floor(t.getMonth() / 3) + 1;
+    const q = `${year}Q${quarter}`;
+    const pos = x0(q);
+    if (pos === undefined) return null; // quarter not in current view
+    return pos + x0.bandwidth() / 2;
+  }
 
   // Listen to time changes — dim bars outside the active range
   timeListeners.push((t) => {
-    const cx = Math.max(0, Math.min(width, capexTimeScale(t)));
-    capexCursor.attr("x1", cx).attr("x2", cx);
+    const cx = dateToCapexX(t);
+    if (cx !== null) {
+      capexCursor.attr("x1", cx).attr("x2", cx).style("display", null);
+    } else {
+      capexCursor.style("display", "none");
+    }
 
     svg.selectAll(".capex-bar").each(function () {
       const bar = d3.select(this);
@@ -1231,18 +1277,60 @@ function renderCapexChart(capex, allTickers) {
     });
   });
 
-  // Show/hide bars when year filter changes
+  // Update x-axis domain + reposition all bars when year filter changes
   yearRangeListeners.push((startDate, endDate) => {
+    // Update x scale to only cover visible quarters
+    const visibleQuarters = quarters.filter(q => {
+      const qDate = quarterToDate(q);
+      return qDate >= startDate && qDate <= endDate;
+    });
+    x0.domain(visibleQuarters);
+    // Also update x1 domain to only visible companies so bars fill the group evenly
+    const visibleTickers = showTickers.filter(t => showingAll || selectedCompanies.has(t));
+    x1.domain(visibleTickers.length > 0 ? visibleTickers : showTickers).range([0, x0.bandwidth()]);
+
+    // Update x-axis ticks
+    const tickEvery = visibleQuarters.length <= 4 ? 1 : visibleQuarters.length <= 8 ? 2 : 3;
+    capexXAxisG.transition().duration(400)
+      .call(d3.axisBottom(x0).tickValues(visibleQuarters.filter((_, i) => i % tickEvery === 0)))
+      .selectAll("text")
+        .attr("transform", "rotate(-35)").style("text-anchor", "end").style("font-size", "9px");
+
+    // Show/hide bars; collect visible values to recalculate y domain
+    const visibleVals = [];
     svg.selectAll(".capex-bar").each(function () {
       const bar = d3.select(this);
       const qDate = new Date(bar.attr("data-quarter-date"));
       const inYear = qDate >= startDate && qDate <= endDate;
       const ticker = bar.attr("data-ticker");
       const companyOk = showingAll || selectedCompanies.has(ticker);
-      bar.style("display", inYear && companyOk ? null : "none");
+      const visible = inYear && companyOk;
+      bar.style("display", visible ? null : "none");
+      if (visible) visibleVals.push(+bar.attr("data-val"));
     });
-    // Rescale y-axis to visible bars, then re-trigger time for opacity
-    updateCapexYAxis();
+
+    // Recalculate y domain from visible bars
+    if (visibleVals.length > 0) {
+      y.domain([0, d3.max(visibleVals) * 1.1]);
+      capexYAxisG.transition().duration(400).call(d3.axisLeft(y).ticks(4).tickFormat(fmtBillions));
+      capexGridG.transition().duration(400).call(d3.axisLeft(y).ticks(4).tickSize(-width).tickFormat(""));
+    }
+
+    // Reposition all visible bars in ONE transition (x + y + width + height together)
+    svg.selectAll(".capex-bar").each(function () {
+      const bar = d3.select(this);
+      if (bar.style("display") === "none") return;
+      const q = bar.attr("data-quarter");
+      const ticker = bar.attr("data-ticker");
+      const val = +bar.attr("data-val");
+      bar.transition().duration(400)
+        .attr("x", x0(q) + x1(ticker))
+        .attr("y", y(val))
+        .attr("width", x1.bandwidth())
+        .attr("height", height - y(val));
+    });
+
+    // Re-trigger time listener for cursor + opacity
     timeListeners.forEach(fn => fn(currentTime));
   });
 }
