@@ -477,6 +477,9 @@ function renderStockChart(stockData, layoffs) {
     }
     updateLines();
     updateComparePanel();
+    // Hide scrub panel immediately if no companies are active
+    const sp = document.getElementById("scrub-info");
+    if (sp && active.size === 0) sp.style.display = "none";
   });
 
   // Add data-ticker attribute to legend items
@@ -1053,7 +1056,7 @@ function renderStockChart(stockData, layoffs) {
         </div>`;
       }).join('');
       scrubPanel.innerHTML = `<div class="scrub-info-date">${fmtMonthYear(t)}</div>${rows}`;
-      scrubPanel.style.display = "block";
+      scrubPanel.style.display = labelPositions.length > 0 ? "block" : "none";
     } else {
       // Compare mode: hide scrub panel, show inline labels on cursor
       if (scrubPanel) scrubPanel.style.display = "none";
