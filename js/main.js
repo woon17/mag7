@@ -1049,20 +1049,56 @@ function renderStockChart(stockData, layoffs) {
     const scrubPanel = document.getElementById("scrub-info");
 
     if (!compareMode && scrubPanel) {
-      // Cursor mode: always show the top-left panel, hide inline labels
+      // Cursor mode: show compare-style panel (date range, prices, %, breakdown)
       labelPositions.forEach(lp => cursorLabels[lp.ticker].style("display", "none"));
+
+      // Benchmark return from range start to cursor
+      let benchPctR = 0;
+      if (normBenchmark !== "none") {
+        const bStart = getCloseAtTime(normBenchmark, rangeStartTime);
+        const bEnd   = getCloseAtTime(normBenchmark, t);
+        benchPctR = Math.round((bEnd - bStart) / bStart * 1000) / 10;
+      }
+
+      const s = n => `${n >= 0 ? '+' : ''}${n.toFixed(1)}%`;
+      const startDay = new Date(rangeStartTime.getFullYear(), rangeStartTime.getMonth(), rangeStartTime.getDate());
+      const endDay   = new Date(t.getFullYear(), t.getMonth(), t.getDate());
+      const days = Math.round((endDay - startDay) / 86_400_000);
+
       const rows = labelPositions.slice()
-        .sort((a, b) => (b.value - 100) - (a.value - 100))
         .map(lp => {
-        const pct = (lp.value - 100).toFixed(1);
-        const pctStr = `${pct >= 0 ? '+' : ''}${pct}%`;
-        return `<div class="scrub-info-row">
-          <span class="scrub-info-name" style="color:${COLORS[lp.ticker]}">${COMPANY_NAMES[lp.ticker]}</span>
-          <span class="scrub-info-price">$${lp.close.toFixed(1)}</span>
-          <span class="scrub-info-pct ${parseFloat(pct) >= 0 ? 'cmp-pos' : 'cmp-neg'}">${pctStr}</span>
-        </div>`;
-      }).join('');
-      scrubPanel.innerHTML = `<div class="scrub-info-date">${fmtMonthYear(t)}</div>${rows}`;
+          const startPrice = getCloseAtTime(lp.ticker, rangeStartTime);
+          const rawPctR = Math.round((lp.close - startPrice) / startPrice * 1000) / 10;
+          const isBench = normBenchmark !== "none" && lp.ticker === normBenchmark;
+          const pct = normBenchmark !== "none" ? (isBench ? 0 : rawPctR - benchPctR) : rawPctR;
+          return { ticker: lp.ticker, startPrice, endPrice: lp.close, rawPctR, pct, isBench };
+        })
+        .sort((a, b) => b.pct - a.pct)
+        .map(r => {
+          const breakdown = normBenchmark !== "none"
+            ? r.isBench
+              ? `<span class="compare-info-breakdown">(${benchPctR <= 0 ? '+' : '−'}${Math.abs(benchPctR).toFixed(1)}%)</span>`
+              : `<span class="compare-info-breakdown">(${s(r.rawPctR)} ${benchPctR >= 0 ? '−' : '+'} ${Math.abs(benchPctR).toFixed(1)}%)</span>`
+            : '';
+          return `
+          <div class="compare-info-row">
+            <div class="compare-info-left">
+              <span class="compare-info-name" style="color:${COLORS[r.ticker]}">${COMPANY_NAMES[r.ticker]}</span>
+              <span class="compare-info-prices">$${r.startPrice.toFixed(1)} &rarr; $${r.endPrice.toFixed(1)}</span>
+            </div>
+            <div class="compare-info-right">
+              <span class="compare-info-pct ${r.pct >= 0 ? 'cmp-pos' : 'cmp-neg'}">${s(r.pct)}</span>
+              ${breakdown}
+            </div>
+          </div>`;
+        }).join('');
+
+      scrubPanel.innerHTML = `
+        <div class="compare-info-header">
+          ${fmtMonthYear(rangeStartTime)} &rarr; ${fmtMonthYear(t)}
+          <span class="compare-info-days">(${days} day${days !== 1 ? 's' : ''})</span>
+        </div>
+        ${rows}`;
       scrubPanel.style.display = labelPositions.length > 0 ? "block" : "none";
     } else {
       // Compare mode: hide scrub panel, show inline labels on cursor
