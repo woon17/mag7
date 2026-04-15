@@ -1141,24 +1141,6 @@ function renderCapexChart(capex, allTickers) {
   capexXAxisG.selectAll("text").attr("transform", "rotate(-35)").style("text-anchor", "end").style("font-size", "9px");
   const capexYAxisG = svg.append("g").attr("class", "axis").call(d3.axisLeft(y).ticks(4).tickFormat(fmtBillions));
 
-  // Recalculate y domain from currently visible bars and rescale
-  function updateCapexYAxis() {
-    const visibleVals = [];
-    svg.selectAll(".capex-bar").each(function() {
-      const bar = d3.select(this);
-      if (bar.style("display") !== "none") {
-        visibleVals.push(+bar.attr("data-val"));
-      }
-    });
-    if (visibleVals.length === 0) return;
-    y.domain([0, d3.max(visibleVals) * 1.1]);
-    capexYAxisG.transition().duration(400).call(d3.axisLeft(y).ticks(4).tickFormat(fmtBillions));
-    capexGridG.transition().duration(400).call(d3.axisLeft(y).ticks(4).tickSize(-width).tickFormat(""));
-    svg.selectAll(".capex-bar").transition().duration(400)
-      .attr("y",      function() { return y(+d3.select(this).attr("data-val")); })
-      .attr("height", function() { return height - y(+d3.select(this).attr("data-val")); });
-  }
-
   // Group by quarter
   const grouped = d3.group(filtered, d => d.calendar_quarter);
 
