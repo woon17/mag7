@@ -475,12 +475,62 @@ header h1 {
   position: relative;
 }
 
+/* ========== SCRUB INFO PANEL (right-edge fallback) ========== */
+#scrub-info {
+  display: none;
+  position: absolute;
+  top: 20px;
+  left: 85px;
+  background: rgba(13, 17, 23, 0.93);
+  border: 1px solid #30363d;
+  border-radius: 6px;
+  padding: 8px 12px;
+  pointer-events: none;
+  min-width: 190px;
+  z-index: 20;
+}
+
+.scrub-info-date {
+  font-size: 0.68rem;
+  color: #58a6ff;
+  padding-bottom: 5px;
+  margin-bottom: 5px;
+  border-bottom: 1px solid #21262d;
+}
+
+.scrub-info-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  padding: 2px 0;
+}
+
+.scrub-info-name {
+  font-size: 0.68rem;
+  font-weight: 600;
+  width: 64px;
+  flex-shrink: 0;
+}
+
+.scrub-info-price {
+  font-size: 0.68rem;
+  color: #8b949e;
+  flex: 1;
+}
+
+.scrub-info-pct {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-align: right;
+}
+
 /* ========== COMPARE INFO PANEL ========== */
 #compare-info {
   display: none;
   position: absolute;
   top: 20px;
-  left: 65px;
+  left: 85px;
   background: rgba(13, 17, 23, 0.93);
   border: 1px solid #30363d;
   border-radius: 6px;
@@ -496,6 +546,13 @@ header h1 {
   padding-bottom: 5px;
   margin-bottom: 5px;
   border-bottom: 1px solid #21262d;
+}
+
+.compare-info-days {
+  color: #8b949e;
+  font-size: 0.63rem;
+  font-weight: 400;
+  margin-left: 4px;
 }
 
 .compare-info-row {

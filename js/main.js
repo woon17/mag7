@@ -378,7 +378,7 @@ Promise.all([
   // Align timeline bar padding so track + labels both match the stock chart's x-axis
   const stockSvg = document.querySelector("#stock-chart svg");
   if (stockSvg) {
-    const chartMarginLeft = 55, chartMarginRight = 20;
+    const chartMarginLeft = 68, chartMarginRight = 20;
     const svgRect = stockSvg.getBoundingClientRect();
     const bar = document.getElementById("timeline-bar");
     bar.style.paddingLeft = (svgRect.left + chartMarginLeft) + "px";
@@ -415,7 +415,7 @@ document.addEventListener("keydown", (e) => {
 function renderStockChart(stockData, layoffs) {
   const container = d3.select("#stock-chart");
   const rect = container.node().getBoundingClientRect();
-  const margin = { top: 15, right: 20, bottom: 35, left: 55 };
+  const margin = { top: 15, right: 20, bottom: 35, left: 68 };
   const width = rect.width - margin.left - margin.right;
   const height = rect.height - margin.top - margin.bottom - 10;
 
@@ -567,7 +567,7 @@ function renderStockChart(stockData, layoffs) {
     .text("");
 
   const yAxisLabel = svg.append("text").attr("transform", "rotate(-90)")
-    .attr("y", -40).attr("x", -height / 2).attr("text-anchor", "middle")
+    .attr("y", -52).attr("x", -height / 2).attr("text-anchor", "middle")
     .style("fill", "#8b949e").style("font-size", "11px").text("% Change from Start");
 
   // Clip path — reveals data up to current time
@@ -860,9 +860,13 @@ function renderStockChart(stockData, layoffs) {
       .sort((a, b) => b.pct - a.pct);
 
     const s = n => `${n >= 0 ? '+' : ''}${n.toFixed(1)}%`;
+    const startDay = new Date(rangeStartTime.getFullYear(), rangeStartTime.getMonth(), rangeStartTime.getDate());
+    const endDay   = new Date(currentTime.getFullYear(),   currentTime.getMonth(),   currentTime.getDate());
+    const days = Math.round((endDay - startDay) / 86_400_000);
     panel.innerHTML = `
       <div class="compare-info-header">
         ${fmtMonthYear(rangeStartTime)} &rarr; ${fmtMonthYear(currentTime)}
+        <span class="compare-info-days">(${days} day${days !== 1 ? 's' : ''})</span>
       </div>
       ${rows.map(r => {
         const breakdown = normBenchmark !== "none"
@@ -892,6 +896,11 @@ function renderStockChart(stockData, layoffs) {
 
   // Brush must always sit above the hover overlay in SVG z-order
   brushG.raise();
+
+  // Clear brush selection when year filter changes
+  yearRangeListeners.push(() => {
+    brush.move(brushG, null);
+  });
 
   function updateLines() {
     tickers.forEach(t => {
@@ -1012,30 +1021,61 @@ function renderStockChart(stockData, layoffs) {
       }
     }
 
-    labelPositions.forEach(lp => {
-      let labelText;
-      if (compareMode) {
-        // Show % change within the selected range — matches the compare panel
-        const startClose = getCloseAtTime(lp.ticker, rangeStartTime);
-        let rangePct = (lp.close - startClose) / startClose * 100;
-        if (normBenchmark !== "none") {
-          const bStart = getCloseAtTime(normBenchmark, rangeStartTime);
-          const bEnd   = getCloseAtTime(normBenchmark, t);
-          rangePct -= (bEnd - bStart) / bStart * 100;
+    // Near right edge: hide inline labels, show floating panel instead
+    // 170px = approx max label width e.g. "$5100.0 (+1382.8%)"
+    const nearRight = !compareMode && (cx + 170 > width);
+    const scrubPanel = document.getElementById("scrub-info");
+
+    if (nearRight && scrubPanel) {
+      labelPositions.forEach(lp => cursorLabels[lp.ticker].style("display", "none"));
+      const rows = labelPositions.slice().reverse().map(lp => {
+        let pctStr;
+        if (compareMode) {
+          const startClose = getCloseAtTime(lp.ticker, rangeStartTime);
+          let rangePct = (lp.close - startClose) / startClose * 100;
+          if (normBenchmark !== "none") {
+            const bStart = getCloseAtTime(normBenchmark, rangeStartTime);
+            const bEnd   = getCloseAtTime(normBenchmark, t);
+            rangePct -= (bEnd - bStart) / bStart * 100;
+          }
+          pctStr = `${rangePct >= 0 ? '+' : ''}${rangePct.toFixed(1)}%`;
+        } else {
+          const pct = (lp.value - 100).toFixed(1);
+          pctStr = `${pct >= 0 ? '+' : ''}${pct}%`;
         }
-        const sign = rangePct >= 0 ? "+" : "";
-        labelText = `$${lp.close.toFixed(1)} (${sign}${rangePct.toFixed(1)}%)`;
-      } else {
-        // Scrub mode: % from the original dataset baseline — matches the y-axis gridlines
-        const pctChange = (lp.value - 100).toFixed(1);
-        const sign = pctChange >= 0 ? "+" : "";
-        labelText = `$${lp.close.toFixed(1)} (${sign}${pctChange}%)`;
-      }
-      cursorLabels[lp.ticker].style("display", null)
-        .attr("text-anchor", "start")
-        .attr("x", cx + 8).attr("y", lp.yPos + 4)
-        .text(labelText);
-    });
+        return `<div class="scrub-info-row">
+          <span class="scrub-info-name" style="color:${COLORS[lp.ticker]}">${COMPANY_NAMES[lp.ticker]}</span>
+          <span class="scrub-info-price">$${lp.close.toFixed(1)}</span>
+          <span class="scrub-info-pct" style="color:${COLORS[lp.ticker]}">${pctStr}</span>
+        </div>`;
+      }).join('');
+      scrubPanel.innerHTML = `<div class="scrub-info-date">${fmtMonthYear(t)}</div>${rows}`;
+      scrubPanel.style.display = "block";
+    } else {
+      if (scrubPanel) scrubPanel.style.display = "none";
+      labelPositions.forEach(lp => {
+        let labelText;
+        if (compareMode) {
+          const startClose = getCloseAtTime(lp.ticker, rangeStartTime);
+          let rangePct = (lp.close - startClose) / startClose * 100;
+          if (normBenchmark !== "none") {
+            const bStart = getCloseAtTime(normBenchmark, rangeStartTime);
+            const bEnd   = getCloseAtTime(normBenchmark, t);
+            rangePct -= (bEnd - bStart) / bStart * 100;
+          }
+          const sign = rangePct >= 0 ? "+" : "";
+          labelText = `$${lp.close.toFixed(1)} (${sign}${rangePct.toFixed(1)}%)`;
+        } else {
+          const pctChange = (lp.value - 100).toFixed(1);
+          const sign = pctChange >= 0 ? "+" : "";
+          labelText = `$${lp.close.toFixed(1)} (${sign}${pctChange}%)`;
+        }
+        cursorLabels[lp.ticker].style("display", null)
+          .attr("text-anchor", "start")
+          .attr("x", cx + 8).attr("y", lp.yPos + 4)
+          .text(labelText);
+      });
+    }
   });
 
   // Position layoff markers at correct y on initial load
