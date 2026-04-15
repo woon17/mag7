@@ -41,9 +41,9 @@ header h1 {
 /* ========== HEADER FILTERS WRAPPER ========== */
 .header-filters {
   display: flex;
-  flex-direction: row;
-  gap: 6px;
-  align-items: center;
+  flex-direction: column;
+  gap: 4px;
+  align-items: flex-start;
   flex-wrap: nowrap;
 }
 
@@ -54,7 +54,6 @@ header h1 {
   gap: 4px;
   flex-wrap: nowrap;
   white-space: nowrap;
-  padding-left: 2px;
 }
 
 .year-filter-label {
@@ -501,33 +500,50 @@ header h1 {
 
 .compare-info-row {
   display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 2px 0;
-  font-size: 0.72rem;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 3px 0;
+}
+
+.compare-info-left {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
 }
 
 .compare-info-name {
   font-weight: 600;
-  width: 64px;
-  flex-shrink: 0;
+  font-size: 0.72rem;
 }
 
 .compare-info-prices {
   color: #8b949e;
-  font-size: 0.65rem;
-  flex: 1;
+  font-size: 0.63rem;
+}
+
+.compare-info-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 1px;
+  flex-shrink: 0;
 }
 
 .compare-info-pct {
   font-weight: 700;
   font-size: 0.75rem;
-  text-align: right;
-  min-width: 52px;
 }
 
 .cmp-pos { color: #3fb950; }
 .cmp-neg { color: #f85149; }
+
+.compare-info-breakdown {
+  font-size: 0.6rem;
+  opacity: 0.6;
+  font-weight: 400;
+  white-space: nowrap;
+}
 
 /* ========== CHART STYLES ========== */
 .axis text { fill: #8b949e; font-size: 10px; }

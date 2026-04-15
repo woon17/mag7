@@ -505,24 +505,24 @@ function renderStockChart(stockData, layoffs) {
       normBenchmark = btn.dataset.norm;
       document.querySelectorAll(".norm-btn").forEach(b => b.classList.remove("active"));
       btn.classList.add("active");
-      // Rebuild currentData, flush to datums so lines + dots use same data
-      currentData = buildNormalized(normalized, normBenchmark);
-      flushDataToDatums();
+      // Rebuild currentData respecting the active year rebase, then flush to datums
+      rebaseCurrentData(activeYear !== null ? new Date(activeYear, 0, 1) : null);
       yAxisLabel.text(normBenchmark === "none"
         ? "% Change from Start"
         : `Excess Return vs ${normBenchmark === "SPX" ? "S&P 500" : "Nasdaq-100"}`);
-      // In normalized mode, hide the benchmark line (it would just sit flat on the 0% baseline)
-      // and relabel the zero line instead
+      // Show/hide benchmark line depending on normalize mode
       tickers.forEach(t => {
-        if (normBenchmark !== "none" && t === normBenchmark) {
-          svg.selectAll(`.line-${t}`).style("opacity", 0);
-          svg.selectAll(`.future-${t}`).style("opacity", 0);
+        if (BENCHMARKS.has(t)) {
+          const hide = normBenchmark !== "none" && t === normBenchmark;
+          svg.selectAll(`.line-${t}`).style("opacity", hide ? 0 : null);
+          svg.selectAll(`.future-${t}`).style("opacity", hide ? 0 : null);
         }
       });
       zeroLineLabel.text(normBenchmark === "none"
         ? ""
         : `← ${normBenchmark === "SPX" ? "S&P 500" : "Nasdaq-100"} baseline (0%)`);
       updateLines();
+      updateComparePanel();
     });
   });
 
@@ -826,30 +826,50 @@ function renderStockChart(stockData, layoffs) {
     if (!panel) return;
     if (!compareMode) { panel.style.display = "none"; return; }
 
+    // Benchmark return over the selected window — round once so formula components are consistent
+    let benchPctR = 0;
+    if (normBenchmark !== "none") {
+      const bStart = getCloseAtTime(normBenchmark, rangeStartTime);
+      const bEnd   = getCloseAtTime(normBenchmark, currentTime);
+      benchPctR = Math.round((bEnd - bStart) / bStart * 1000) / 10; // 1 d.p.
+    }
+
     const rows = tickers
       .filter(t => active.has(t))
       .map(t => {
         const startPrice = getCloseAtTime(t, rangeStartTime);
         const endPrice   = getCloseAtTime(t, currentTime);
-        const change = endPrice - startPrice;
-        const pct    = (change / startPrice) * 100;
-        return { t, startPrice, endPrice, change, pct };
+        // Round individual components first so formula always adds up to the displayed value
+        const rawPctR = Math.round((endPrice - startPrice) / startPrice * 1000) / 10;
+        const isBench = normBenchmark !== "none" && t === normBenchmark;
+        const pct = normBenchmark !== "none" ? (isBench ? 0 : rawPctR - benchPctR) : rawPctR;
+        return { t, startPrice, endPrice, rawPctR, pct, isBench };
       })
       .sort((a, b) => b.pct - a.pct);
 
+    const s = n => `${n >= 0 ? '+' : ''}${n.toFixed(1)}%`;
     panel.innerHTML = `
       <div class="compare-info-header">
         ${fmtMonthYear(rangeStartTime)} &rarr; ${fmtMonthYear(currentTime)}
       </div>
-      ${rows.map(r => `
+      ${rows.map(r => {
+        const breakdown = normBenchmark !== "none"
+          ? r.isBench
+            ? `<span class="compare-info-breakdown">(${benchPctR <= 0 ? '+' : '−'}${Math.abs(benchPctR).toFixed(1)}%)</span>`
+            : `<span class="compare-info-breakdown">(${s(r.rawPctR)} ${benchPctR >= 0 ? '−' : '+'} ${Math.abs(benchPctR).toFixed(1)}%)</span>`
+          : '';
+        return `
         <div class="compare-info-row">
-          <span class="compare-info-name" style="color:${COLORS[r.t]}">${COMPANY_NAMES[r.t]}</span>
-          <span class="compare-info-prices">$${r.startPrice.toFixed(1)} → $${r.endPrice.toFixed(1)}</span>
-          <span class="compare-info-pct ${r.pct >= 0 ? 'cmp-pos' : 'cmp-neg'}">
-            ${r.pct >= 0 ? '+' : ''}${r.pct.toFixed(1)}%
-          </span>
-        </div>
-      `).join('')}
+          <div class="compare-info-left">
+            <span class="compare-info-name" style="color:${COLORS[r.t]}">${COMPANY_NAMES[r.t]}</span>
+            <span class="compare-info-prices">$${r.startPrice.toFixed(1)} → $${r.endPrice.toFixed(1)}</span>
+          </div>
+          <div class="compare-info-right">
+            <span class="compare-info-pct ${r.pct >= 0 ? 'cmp-pos' : 'cmp-neg'}">${s(r.pct)}</span>
+            ${breakdown}
+          </div>
+        </div>`;
+      }).join('')}
     `;
     panel.style.display = "block";
   }
@@ -985,9 +1005,14 @@ function renderStockChart(stockData, layoffs) {
       if (compareMode) {
         // Show % change within the selected range — matches the compare panel
         const startClose = getCloseAtTime(lp.ticker, rangeStartTime);
-        const rangePct = ((lp.close - startClose) / startClose * 100).toFixed(1);
+        let rangePct = (lp.close - startClose) / startClose * 100;
+        if (normBenchmark !== "none") {
+          const bStart = getCloseAtTime(normBenchmark, rangeStartTime);
+          const bEnd   = getCloseAtTime(normBenchmark, t);
+          rangePct -= (bEnd - bStart) / bStart * 100;
+        }
         const sign = rangePct >= 0 ? "+" : "";
-        labelText = `$${lp.close.toFixed(1)} (${sign}${rangePct}%)`;
+        labelText = `$${lp.close.toFixed(1)} (${sign}${rangePct.toFixed(1)}%)`;
       } else {
         // Scrub mode: % from the original dataset baseline — matches the y-axis gridlines
         const pctChange = (lp.value - 100).toFixed(1);
@@ -1000,6 +1025,9 @@ function renderStockChart(stockData, layoffs) {
         .text(labelText);
     });
   });
+
+  // Position layoff markers at correct y on initial load
+  updateLines();
 }
 
 // ============================================
