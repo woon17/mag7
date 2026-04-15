@@ -147,10 +147,6 @@ function toggleCompanyFilter(ticker) {
     showingAll = false;
     if (selectedCompanies.has(ticker)) {
       selectedCompanies.delete(ticker);
-      if (selectedCompanies.size === 0) {
-        selectedCompanies.clear();
-        showingAll = true;
-      }
     } else {
       selectedCompanies.add(ticker);
     }
@@ -184,6 +180,10 @@ function setupCompanyFilter(tickers) {
       const isChecked = d3.select("#all-checkbox").property("checked");
       if (isChecked) {
         toggleCompanyFilter(null);
+      } else {
+        selectedCompanies.clear();
+        showingAll = false;
+        filterListeners.forEach(fn => fn());
       }
     });
 
@@ -217,10 +217,25 @@ function setupCompanyFilter(tickers) {
 
   mag7Tickers.forEach(addCheckbox);
 
+  // Benchmarks go in the dedicated #benchmark-filter div (right column of header)
   if (benchmarkTickers.length > 0) {
-    container.append("span").attr("class", "filter-divider").text("│");
-    container.append("span").attr("class", "filter-benchmark-label").text("Benchmarks:");
-    benchmarkTickers.forEach(addCheckbox);
+    const benchContainer = d3.select("#benchmark-filter");
+    benchContainer.append("span").attr("class", "filter-benchmark-label").text("Benchmarks:");
+    benchmarkTickers.forEach(t => {
+      const label = benchContainer.append("label")
+        .attr("class", "filter-checkbox-label")
+        .attr("id", `label-${t}`);
+      label.append("input")
+        .attr("type", "checkbox")
+        .attr("class", "company-checkbox")
+        .attr("id", `checkbox-${t}`)
+        .style("accent-color", COLORS[t])
+        .on("change", () => toggleCompanyFilter(t));
+      label.append("span")
+        .attr("class", "checkbox-text")
+        .style("color", COLORS[t])
+        .text(COMPANY_NAMES[t]);
+    });
   }
 
   // Update checkbox states whenever filter changes
@@ -363,11 +378,11 @@ Promise.all([
   });
 
   const tickers = [...new Set(stockData.map(d => d.ticker))];
-  setupCompanyFilter(tickers);
   setupYearFilter(dataStartYear, dataEndYear);
+  setupCompanyFilter(tickers);
   setupTimelineBar(layoffs);
   renderStockChart(stockData, layoffs);
-  renderCapexChart(capex);
+  renderCapexChart(capex, tickers);
   renderLayoffPanel(layoffs);
 
   // Initialize to show full timeline
@@ -1085,26 +1100,30 @@ function renderStockChart(stockData, layoffs) {
 // ============================================
 // Chart 2: CapEx — bars grow up to current time
 // ============================================
-function renderCapexChart(capex) {
+function renderCapexChart(capex, allTickers) {
   const container = d3.select("#capex-chart");
   const rect = container.node().getBoundingClientRect();
   const margin = { top: 10, right: 10, bottom: 40, left: 50 };
   const width = rect.width - margin.left - margin.right;
   const height = rect.height - margin.top - margin.bottom - 5;
 
-  // Use all tickers present in the data and clip by current dashboard year range.
-  const showTickers = [...new Set(capex.map(d => d.ticker))].sort();
+  // Tickers that have capex data (array for scales, set for fast lookup)
+  const showTickers = [...new Set(capex.map(d => d.ticker))].sort((a, b) => COMPANY_NAMES[a].localeCompare(COMPANY_NAMES[b]));
+  const dataTickers = new Set(showTickers);
   const filtered = capex.filter(d => {
     const year = parseInt(d.calendar_quarter.slice(0, 4));
-    return showTickers.includes(d.ticker) && year >= TIME_START.getFullYear() && year <= TIME_END.getFullYear();
+    return year >= TIME_START.getFullYear() && year <= TIME_END.getFullYear();
   });
 
-  // Capex legend
+  // Legend uses all Mag 7 tickers in the same order as the company filter (from stock CSV)
+  const legendTickers = allTickers.filter(t => !BENCHMARKS.has(t));
   const capexLegend = d3.select("#capex-legend");
-  showTickers.forEach(t => {
-    const item = capexLegend.append("div").attr("class", "legend-item");
+  legendTickers.forEach(t => {
+    const item = capexLegend.append("div").attr("class", "legend-item").attr("data-ticker", t)
+      .on("click", () => toggleCompanyFilter(t));
     item.append("div").attr("class", "legend-swatch").style("background", COLORS[t]);
     item.append("span").text(COMPANY_NAMES[t]);
+    if (!dataTickers.has(t)) item.attr("title", "No data available").attr("data-no-capex", "1");
   });
 
   const svg = container.append("svg")
@@ -1189,11 +1208,17 @@ function renderCapexChart(capex) {
     svg.selectAll(".capex-bar").each(function () {
       const bar = d3.select(this);
       const barTicker = bar.attr("data-ticker");
-      if (showingAll) {
-        bar.style("display", null);
-      } else {
-        bar.style("display", selectedCompanies.has(barTicker) ? null : "none");
-      }
+      const visible = showingAll || selectedCompanies.has(barTicker);
+      bar.style("display", visible ? null : "none");
+    });
+    capexLegend.selectAll(".legend-item").each(function () {
+      const item = d3.select(this);
+      const t = item.attr("data-ticker");
+      const selected = showingAll || selectedCompanies.has(t);
+      const noData = item.attr("data-no-capex") === "1";
+      item.classed("disabled", !selected);
+      // No-data items: dim further when not selected, full opacity when selected
+      item.style("opacity", selected ? null : (noData ? 0.15 : null));
     });
     updateCapexYAxis();
   });

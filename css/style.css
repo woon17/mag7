@@ -15,9 +15,6 @@ header {
   padding: 8px 24px;
   background: #161b22;
   border-bottom: 1px solid #21262d;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
   flex-shrink: 0;
 }
 
@@ -25,6 +22,7 @@ header {
   display: flex;
   align-items: center;
   gap: 20px;
+  width: 100%;
 }
 
 header h1 {
@@ -43,8 +41,25 @@ header h1 {
   display: flex;
   flex-direction: column;
   gap: 4px;
-  align-items: flex-start;
-  flex-wrap: nowrap;
+  min-width: 0;
+  margin-left: auto;
+}
+
+.benchmark-filter {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+/* ========== YEAR + BENCHMARK ROW ========== */
+.year-bench-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
 }
 
 /* ========== YEAR FILTER ========== */
@@ -55,6 +70,7 @@ header h1 {
   flex-wrap: nowrap;
   white-space: nowrap;
 }
+
 
 .year-filter-label {
   color: #8b949e;
@@ -208,6 +224,13 @@ header h1 {
 
 .panel-capex {
   flex: 0 0 220px;
+}
+
+#capex-legend {
+  display: grid;
+  grid-template-columns: repeat(3, auto);
+  gap: 2px 8px;
+  justify-content: start;
 }
 
 .panel-layoff {
