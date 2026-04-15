@@ -1049,7 +1049,7 @@ function renderStockChart(stockData, layoffs) {
         return `<div class="scrub-info-row">
           <span class="scrub-info-name" style="color:${COLORS[lp.ticker]}">${COMPANY_NAMES[lp.ticker]}</span>
           <span class="scrub-info-price">$${lp.close.toFixed(1)}</span>
-          <span class="scrub-info-pct" style="color:${COLORS[lp.ticker]}">${pctStr}</span>
+          <span class="scrub-info-pct ${parseFloat(pct) >= 0 ? 'cmp-pos' : 'cmp-neg'}">${pctStr}</span>
         </div>`;
       }).join('');
       scrubPanel.innerHTML = `<div class="scrub-info-date">${fmtMonthYear(t)}</div>${rows}`;
