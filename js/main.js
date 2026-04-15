@@ -1036,28 +1036,16 @@ function renderStockChart(stockData, layoffs) {
       }
     }
 
-    // Near right edge: hide inline labels, show floating panel instead
-    // 170px = approx max label width e.g. "$5100.0 (+1382.8%)"
-    const nearRight = !compareMode && (cx + 170 > width);
     const scrubPanel = document.getElementById("scrub-info");
 
-    if (nearRight && scrubPanel) {
+    if (!compareMode && scrubPanel) {
+      // Cursor mode: always show the top-left panel, hide inline labels
       labelPositions.forEach(lp => cursorLabels[lp.ticker].style("display", "none"));
-      const rows = labelPositions.slice().reverse().map(lp => {
-        let pctStr;
-        if (compareMode) {
-          const startClose = getCloseAtTime(lp.ticker, rangeStartTime);
-          let rangePct = (lp.close - startClose) / startClose * 100;
-          if (normBenchmark !== "none") {
-            const bStart = getCloseAtTime(normBenchmark, rangeStartTime);
-            const bEnd   = getCloseAtTime(normBenchmark, t);
-            rangePct -= (bEnd - bStart) / bStart * 100;
-          }
-          pctStr = `${rangePct >= 0 ? '+' : ''}${rangePct.toFixed(1)}%`;
-        } else {
-          const pct = (lp.value - 100).toFixed(1);
-          pctStr = `${pct >= 0 ? '+' : ''}${pct}%`;
-        }
+      const rows = labelPositions.slice()
+        .sort((a, b) => (b.value - 100) - (a.value - 100))
+        .map(lp => {
+        const pct = (lp.value - 100).toFixed(1);
+        const pctStr = `${pct >= 0 ? '+' : ''}${pct}%`;
         return `<div class="scrub-info-row">
           <span class="scrub-info-name" style="color:${COLORS[lp.ticker]}">${COMPANY_NAMES[lp.ticker]}</span>
           <span class="scrub-info-price">$${lp.close.toFixed(1)}</span>
@@ -1067,28 +1055,21 @@ function renderStockChart(stockData, layoffs) {
       scrubPanel.innerHTML = `<div class="scrub-info-date">${fmtMonthYear(t)}</div>${rows}`;
       scrubPanel.style.display = "block";
     } else {
+      // Compare mode: hide scrub panel, show inline labels on cursor
       if (scrubPanel) scrubPanel.style.display = "none";
       labelPositions.forEach(lp => {
-        let labelText;
-        if (compareMode) {
-          const startClose = getCloseAtTime(lp.ticker, rangeStartTime);
-          let rangePct = (lp.close - startClose) / startClose * 100;
-          if (normBenchmark !== "none") {
-            const bStart = getCloseAtTime(normBenchmark, rangeStartTime);
-            const bEnd   = getCloseAtTime(normBenchmark, t);
-            rangePct -= (bEnd - bStart) / bStart * 100;
-          }
-          const sign = rangePct >= 0 ? "+" : "";
-          labelText = `$${lp.close.toFixed(1)} (${sign}${rangePct.toFixed(1)}%)`;
-        } else {
-          const pctChange = (lp.value - 100).toFixed(1);
-          const sign = pctChange >= 0 ? "+" : "";
-          labelText = `$${lp.close.toFixed(1)} (${sign}${pctChange}%)`;
+        const startClose = getCloseAtTime(lp.ticker, rangeStartTime);
+        let rangePct = (lp.close - startClose) / startClose * 100;
+        if (normBenchmark !== "none") {
+          const bStart = getCloseAtTime(normBenchmark, rangeStartTime);
+          const bEnd   = getCloseAtTime(normBenchmark, t);
+          rangePct -= (bEnd - bStart) / bStart * 100;
         }
+        const sign = rangePct >= 0 ? "+" : "";
         cursorLabels[lp.ticker].style("display", null)
           .attr("text-anchor", "start")
           .attr("x", cx + 8).attr("y", lp.yPos + 4)
-          .text(labelText);
+          .text(`$${lp.close.toFixed(1)} (${sign}${rangePct.toFixed(1)}%)`);
       });
     }
   });
