@@ -216,6 +216,18 @@ header h1 {
   font-weight: 600;
 }
 
+kbd {
+  display: inline-block;
+  padding: 1px 5px;
+  font-size: 0.72rem;
+  font-family: monospace;
+  color: #c9d1d9;
+  background: #161b22;
+  border: 1px solid #444c56;
+  border-radius: 3px;
+  vertical-align: middle;
+}
+
 .static-viz-demo {
   display: flex;
   flex-direction: column;
