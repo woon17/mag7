@@ -102,112 +102,50 @@
   <!-- Tooltip -->
   <div id="tooltip"></div>
 
-  <!-- Info modal -->
-  <div id="info-modal" class="info-modal-overlay">
-    <div class="info-modal">
-      <button class="info-modal-close" id="close-info-modal">✕</button>
-
-      <!-- Slides -->
-      <div class="info-slides">
-
-        <!-- Slide 1: Team Intro -->
-        <div class="info-slide active">
-          <div class="slide-icon">👥</div>
-          <h2 class="slide-title">Meet the Team</h2>
-          <p class="slide-subtitle">CS5346 — Information Visualisation · Group 7</p>
-          <div class="team-grid">
-            <div class="team-member"><span class="member-name">Yiwei</span></div>
-            <div class="team-member"><span class="member-name">Haochen</span></div>
-            <div class="team-member"><span class="member-name">Shufa</span></div>
-            <div class="team-member"><span class="member-name">Isuru</span></div>
-          </div>
-          <p class="slide-desc">This dashboard explores layoffs, stock performance, and capital expenditure across the Magnificent 7 tech companies from 2020 to 2025.</p>
-        </div>
-
-        <!-- Slide 2: How to use the interactive dashboard -->
-        <div class="info-slide">
-          <div class="slide-icon">🖱️</div>
-          <h2 class="slide-title">Using the Dashboard</h2>
-          <ul class="slide-list">
-            <li><span class="list-key">Filter Bar (top right)</span> — toggle companies and years to focus your view</li>
-            <li><span class="list-key">Timeline Scrubber (bottom)</span> — hover to move the time cursor; see live stock prices and layoff markers</li>
-            <li><span class="list-key">Compare Mode</span> — drag across the chart area to select a date range and compare returns</li>
-            <li><span class="list-key">Normalize</span> — switch between raw price, vs S&amp;P 500, or vs Nasdaq-100</li>
-            <li><span class="list-key">Layoff Cards</span> — cards on the right highlight events near the current date</li>
-            <li><span class="list-key">Legend items</span> — click any company name to show/hide its line</li>
-          </ul>
-        </div>
-
-        <!-- Slide 3: How to open static visualisations -->
-        <div class="info-slide">
-          <div class="slide-icon">📊</div>
-          <h2 class="slide-title">Static Visualisations</h2>
-          <p class="slide-desc">Two additional static visualisations are available for deeper analysis. Click either button in the header to open them in a new tab.</p>
-          <div class="static-viz-demo">
-            <div class="demo-step">
-              <span class="demo-num">1</span>
-              <div>Look for <strong>Static Viz 1</strong> and <strong>Static Viz 2</strong> buttons in the top bar, between the group names and the filter controls.</div>
-            </div>
-            <div class="demo-step">
-              <span class="demo-num">2</span>
-              <div>Click a button — the visualisation opens in a <strong>new browser tab</strong> so you can keep the interactive dashboard open alongside it.</div>
-            </div>
-          </div>
-        </div>
-
-      </div><!-- /.info-slides -->
-
-      <!-- Navigation -->
-      <div class="info-nav">
-        <button class="info-nav-btn" id="slide-prev" disabled>&#8592;</button>
-        <div class="info-dots" id="info-dots">
-          <span class="dot active"></span>
-          <span class="dot"></span>
-          <span class="dot"></span>
-        </div>
-        <button class="info-nav-btn" id="slide-next">&#8594;</button>
-      </div>
-    </div>
-  </div><!-- /#info-modal -->
+  <!-- Info modal (content loaded from info-modal.html) -->
+  <div id="info-modal-container"></div>
 
   <script src="js/main.js"></script>
   <script>
-    (function () {
-      const modal = document.getElementById('info-modal');
-      const slides = modal.querySelectorAll('.info-slide');
-      const dots = modal.querySelectorAll('.dot');
-      const prevBtn = document.getElementById('slide-prev');
-      const nextBtn = document.getElementById('slide-next');
-      let current = 0;
+    fetch('info-modal.html')
+      .then(r => r.text())
+      .then(html => {
+        document.getElementById('info-modal-container').innerHTML = html;
 
-      function goTo(n) {
-        slides[current].classList.remove('active');
-        dots[current].classList.remove('active');
-        current = n;
-        slides[current].classList.add('active');
-        dots[current].classList.add('active');
-        prevBtn.disabled = current === 0;
-        nextBtn.disabled = current === slides.length - 1;
-      }
+        const modal = document.getElementById('info-modal');
+        const slides = modal.querySelectorAll('.info-slide');
+        const dots = modal.querySelectorAll('.dot');
+        const prevBtn = document.getElementById('slide-prev');
+        const nextBtn = document.getElementById('slide-next');
+        let current = 0;
 
-      prevBtn.addEventListener('click', () => { if (current > 0) goTo(current - 1); });
-      nextBtn.addEventListener('click', () => { if (current < slides.length - 1) goTo(current + 1); });
-      dots.forEach((d, i) => d.addEventListener('click', () => goTo(i)));
+        function goTo(n) {
+          slides[current].classList.remove('active');
+          dots[current].classList.remove('active');
+          current = n;
+          slides[current].classList.add('active');
+          dots[current].classList.add('active');
+          prevBtn.disabled = current === 0;
+          nextBtn.disabled = current === slides.length - 1;
+        }
 
-      document.getElementById('open-info-modal').addEventListener('click', () => {
-        goTo(0);
+        prevBtn.addEventListener('click', () => { if (current > 0) goTo(current - 1); });
+        nextBtn.addEventListener('click', () => { if (current < slides.length - 1) goTo(current + 1); });
+        dots.forEach((d, i) => d.addEventListener('click', () => goTo(i)));
+
+        document.getElementById('open-info-modal').addEventListener('click', () => {
+          goTo(0);
+          modal.classList.add('visible');
+        });
+        document.getElementById('close-info-modal').addEventListener('click', () => {
+          modal.classList.remove('visible');
+        });
+        modal.addEventListener('click', (e) => {
+          if (e.target === modal) modal.classList.remove('visible');
+        });
+
         modal.classList.add('visible');
       });
-      document.getElementById('close-info-modal').addEventListener('click', () => {
-        modal.classList.remove('visible');
-      });
-      modal.addEventListener('click', (e) => {
-        if (e.target === modal) modal.classList.remove('visible');
-      });
-
-      // Auto-open on first visit
-      modal.classList.add('visible');
-    })();
   </script>
 </body>
 
