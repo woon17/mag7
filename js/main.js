@@ -1406,13 +1406,24 @@ function renderLayoffPanel(layoffs) {
 
   // Listen to time — show cards within the active range
   timeListeners.push((t) => {
+    let newlyVisible = null;
+    let newlyHidden = false;
+    let lastVisible = null;
     panel.selectAll(".layoff-card").each(function () {
       const card = d3.select(this);
       const cardDate = new Date(card.attr("data-date"));
-      // Always respect rangeStartTime (updated by year filter or compare mode)
       const inRange = cardDate >= rangeStartTime && cardDate <= t;
+      const wasVisible = card.classed("visible");
       card.classed("visible", inRange);
+      if (inRange && !wasVisible) newlyVisible = this;
+      if (!inRange && wasVisible) newlyHidden = true;
+      if (inRange) lastVisible = this;
     });
+    if (newlyVisible) {
+      newlyVisible.scrollIntoView({ block: "nearest", behavior: "smooth" });
+    } else if (newlyHidden && lastVisible) {
+      lastVisible.scrollIntoView({ block: "nearest", behavior: "smooth" });
+    }
   });
 
   // Show/hide cards when year filter changes
