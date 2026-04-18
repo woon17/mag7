@@ -3,6 +3,9 @@
 // Mouse X position = time cursor across all charts
 // ============================================
 
+// Shared position for scrub-info and compare-info panels
+let sharedPanelPos = null;
+
 const COLORS = {
   AAPL: "#f0f0f0", // bright silver — Apple grey kept visible on dark bg
   AMZN: "#ff9900", // Amazon orange — unchanged, distinct
@@ -889,6 +892,7 @@ function renderStockChart(stockData, layoffs) {
     const endDay   = new Date(currentTime.getFullYear(),   currentTime.getMonth(),   currentTime.getDate());
     const days = Math.round((endDay - startDay) / 86_400_000);
     panel.innerHTML = `
+      <div class="compare-info-drag-handle"></div>
       <div class="compare-info-header">
         ${fmtMonthYear(rangeStartTime)} &rarr; ${fmtMonthYear(currentTime)}
         <span class="compare-info-days">(${days} day${days !== 1 ? 's' : ''})</span>
@@ -913,6 +917,7 @@ function renderStockChart(stockData, layoffs) {
       }).join('')}
     `;
     panel.style.display = "block";
+    makeDraggable(panel);
   }
 
   // Transparent overlay for hover tooltips on stock lines
@@ -1094,12 +1099,14 @@ function renderStockChart(stockData, layoffs) {
         }).join('');
 
       scrubPanel.innerHTML = `
+        <div class="compare-info-drag-handle"></div>
         <div class="compare-info-header">
           ${fmtMonthYear(rangeStartTime)} &rarr; ${fmtMonthYear(t)}
           <span class="compare-info-days">(${days} day${days !== 1 ? 's' : ''})</span>
         </div>
         ${rows}`;
       scrubPanel.style.display = labelPositions.length > 0 ? "block" : "none";
+      makeDraggable(scrubPanel);
     } else {
       // Compare mode: hide scrub panel, show inline labels on cursor
       if (scrubPanel) scrubPanel.style.display = "none";
@@ -1419,5 +1426,43 @@ function renderLayoffPanel(layoffs) {
       card.style("display", inYear && companyOk ? null : "none");
       card.classed("visible", inYear && companyOk);
     });
+  });
+}
+
+// ============================================
+// Draggable panel helper
+// ============================================
+function makeDraggable(el) {
+  const handle = el.querySelector(".compare-info-drag-handle");
+  if (!handle) return;
+
+  // Apply shared position if one exists from a previous drag
+  if (sharedPanelPos) {
+    el.style.left = sharedPanelPos.left + "px";
+    el.style.top  = sharedPanelPos.top  + "px";
+  }
+
+  let startX, startY, startLeft, startTop;
+
+  handle.addEventListener("mousedown", e => {
+    e.stopPropagation();
+    startX = e.clientX;
+    startY = e.clientY;
+    startLeft = parseInt(el.style.left) || el.offsetLeft;
+    startTop  = parseInt(el.style.top)  || el.offsetTop;
+
+    function onMove(e) {
+      const left = startLeft + e.clientX - startX;
+      const top  = startTop  + e.clientY - startY;
+      el.style.left = left + "px";
+      el.style.top  = top  + "px";
+      sharedPanelPos = { left, top };
+    }
+    function onUp() {
+      document.removeEventListener("mousemove", onMove);
+      document.removeEventListener("mouseup", onUp);
+    }
+    document.addEventListener("mousemove", onMove);
+    document.addEventListener("mouseup", onUp);
   });
 }

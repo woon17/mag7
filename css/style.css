@@ -49,6 +49,21 @@ header {
   white-space: nowrap;
 }
 
+.group-members-grid {
+  display: grid;
+  grid-template-columns: auto auto auto;
+  column-gap: 5px;
+  row-gap: 1px;
+  font-size: 0.68rem;
+  color: #8b949e;
+  align-items: center;
+}
+
+.member-dot {
+  text-align: center;
+  color: #444d56;
+}
+
 header h1 {
   font-size: 1.1rem;
   color: #f0f6fc;
@@ -760,9 +775,10 @@ header h1 {
   border: 1px solid #30363d;
   border-radius: 6px;
   padding: 8px 12px;
-  pointer-events: none;
+  pointer-events: all;
   min-width: 190px;
   z-index: 20;
+  user-select: none;
 }
 
 .scrub-info-date {
@@ -810,9 +826,27 @@ header h1 {
   border: 1px solid #30363d;
   border-radius: 6px;
   padding: 8px 12px;
-  pointer-events: none;
+  pointer-events: all;
   min-width: 230px;
   z-index: 20;
+  user-select: none;
+}
+
+.compare-info-drag-handle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 14px;
+  margin: -4px -8px 6px;
+  cursor: grab;
+  opacity: 0.4;
+}
+.compare-info-drag-handle:active { cursor: grabbing; }
+.compare-info-drag-handle::before {
+  content: "⠿";
+  font-size: 0.9rem;
+  letter-spacing: 2px;
+  color: #8b949e;
 }
 
 .compare-info-header {
