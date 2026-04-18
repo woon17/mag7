@@ -131,6 +131,7 @@ header h1 {
   position: absolute;
   inset: 0;
   overflow-y: auto;
+  padding-right: 12px;
   animation: slideIn 0.25s ease;
 }
 .info-slide.active { display: block; }
