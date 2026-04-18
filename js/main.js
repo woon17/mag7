@@ -1389,7 +1389,7 @@ function renderLayoffPanel(layoffs) {
     card.append("div").attr("class", "card-count").text(fmtNum(d.laid_off));
 
     card.append("div").attr("class", "card-detail")
-      .text(`${fmtDate(d.date)} · ${fmtPct(d.percentage)} of workforce`);
+      .text(d.percentage != null ? `${fmtDate(d.date)} · ${fmtPct(d.percentage)} of workforce` : fmtDate(d.date));
   });
 
   // Listen to filter changes — must also respect the active year range
