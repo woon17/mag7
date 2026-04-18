@@ -2,105 +2,247 @@
   {
     "Company": "Amazon",
     "Date_layoffs": "2022-10-28",
-    "Laid_Off": 150.0,
-    "Percentage": 0.0,
-    "Company_Size_before_Layoffs": 333483.0,
+    "Laid_Off": 150,
     "ticker": "AMZN"
   },
   {
     "Company": "Meta",
     "Date_layoffs": "2022-11-09",
-    "Laid_Off": 11000.0,
-    "Percentage": 13.0,
-    "Company_Size_before_Layoffs": 84615.0,
+    "Laid_Off": 11000,
     "ticker": "META"
   },
   {
     "Company": "Amazon",
     "Date_layoffs": "2022-11-16",
-    "Laid_Off": 10000.0,
-    "Percentage": 3.0,
-    "Company_Size_before_Layoffs": 333333.0,
+    "Laid_Off": 10000,
     "ticker": "AMZN"
   },
   {
     "Company": "Amazon",
     "Date_layoffs": "2023-01-04",
-    "Laid_Off": 8000.0,
-    "Percentage": 2.0,
-    "Company_Size_before_Layoffs": 400000.0,
+    "Laid_Off": 8000,
     "ticker": "AMZN"
   },
   {
     "Company": "Microsoft",
     "Date_layoffs": "2023-01-18",
-    "Laid_Off": 10000.0,
-    "Percentage": 5.0,
-    "Company_Size_before_Layoffs": 200000.0,
+    "Laid_Off": 10000,
     "ticker": "MSFT"
   },
   {
     "Company": "Google",
     "Date_layoffs": "2023-01-20",
-    "Laid_Off": 12000.0,
-    "Percentage": 6.0,
-    "Company_Size_before_Layoffs": 200000.0,
+    "Laid_Off": 12000,
     "ticker": "GOOGL"
   },
   {
     "Company": "Meta",
     "Date_layoffs": "2023-03-14",
-    "Laid_Off": 10000.0,
-    "Percentage": 13.6,
-    "Company_Size_before_Layoffs": 73615.0,
+    "Laid_Off": 10000,
     "ticker": "META"
   },
   {
     "Company": "Amazon",
     "Date_layoffs": "2023-03-20",
-    "Laid_Off": 9000.0,
-    "Percentage": 2.3,
-    "Company_Size_before_Layoffs": 392000.0,
+    "Laid_Off": 9000,
+    "ticker": "AMZN"
+  },
+  {
+    "Company": "Microsoft",
+    "Date_layoffs": "2023-05-10",
+    "Laid_Off": 158,
+    "ticker": "MSFT"
+  },
+  {
+    "Company": "Amazon",
+    "Date_layoffs": "2023-07-13",
+    "Laid_Off": 80,
+    "ticker": "AMZN"
+  },
+  {
+    "Company": "Microsoft",
+    "Date_layoffs": "2023-07-18",
+    "Laid_Off": 1000,
+    "ticker": "MSFT"
+  },
+  {
+    "Company": "Google",
+    "Date_layoffs": "2023-09-13",
+    "Laid_Off": 75,
+    "ticker": "GOOGL"
+  },
+  {
+    "Company": "Google",
+    "Date_layoffs": "2023-10-18",
+    "Laid_Off": 40,
+    "ticker": "GOOGL"
+  },
+  {
+    "Company": "Amazon",
+    "Date_layoffs": "2023-11-13",
+    "Laid_Off": 180,
+    "ticker": "AMZN"
+  },
+  {
+    "Company": "Google",
+    "Date_layoffs": "2024-01-10",
+    "Laid_Off": 1000,
+    "ticker": "GOOGL"
+  },
+  {
+    "Company": "Amazon",
+    "Date_layoffs": "2024-01-18",
+    "Laid_Off": 30,
+    "ticker": "AMZN"
+  },
+  {
+    "Company": "Microsoft",
+    "Date_layoffs": "2024-01-25",
+    "Laid_Off": 1900,
+    "ticker": "MSFT"
+  },
+  {
+    "Company": "Amazon",
+    "Date_layoffs": "2024-02-06",
+    "Laid_Off": 400,
     "ticker": "AMZN"
   },
   {
     "Company": "Tesla",
     "Date_layoffs": "2024-04-15",
-    "Laid_Off": 14000.0,
-    "Percentage": 10.0,
-    "Company_Size_before_Layoffs": 140000.0,
+    "Laid_Off": 14000,
     "ticker": "TSLA"
+  },
+  {
+    "Company": "Tesla",
+    "Date_layoffs": "2024-04-30",
+    "Laid_Off": 500,
+    "ticker": "TSLA"
+  },
+  {
+    "Company": "Google",
+    "Date_layoffs": "2024-05-01",
+    "Laid_Off": 200,
+    "ticker": "GOOGL"
+  },
+  {
+    "Company": "Google",
+    "Date_layoffs": "2024-05-10",
+    "Laid_Off": 57,
+    "ticker": "GOOGL"
+  },
+  {
+    "Company": "Google",
+    "Date_layoffs": "2024-05-31",
+    "Laid_Off": 100,
+    "ticker": "GOOGL"
+  },
+  {
+    "Company": "Microsoft",
+    "Date_layoffs": "2024-06-03",
+    "Laid_Off": 1000,
+    "ticker": "MSFT"
+  },
+  {
+    "Company": "Microsoft",
+    "Date_layoffs": "2024-09-12",
+    "Laid_Off": 650,
+    "ticker": "MSFT"
   },
   {
     "Company": "Meta",
     "Date_layoffs": "2025-02-10",
-    "Laid_Off": 3600.0,
-    "Percentage": 5.0,
-    "Company_Size_before_Layoffs": 72000.0,
+    "Laid_Off": 3600,
+    "ticker": "META"
+  },
+  {
+    "Company": "Meta",
+    "Date_layoffs": "2025-04-24",
+    "Laid_Off": 100,
     "ticker": "META"
   },
   {
     "Company": "Microsoft",
-    "Date_layoffs": "2025-05-23",
-    "Laid_Off": 6000.0,
-    "Percentage": 3.0,
-    "Company_Size_before_Layoffs": 200000.0,
+    "Date_layoffs": "2025-05-13",
+    "Laid_Off": 6000,
     "ticker": "MSFT"
+  },
+  {
+    "Company": "Amazon",
+    "Date_layoffs": "2025-05-14",
+    "Laid_Off": 100,
+    "ticker": "AMZN"
   },
   {
     "Company": "Microsoft",
     "Date_layoffs": "2025-06-02",
-    "Laid_Off": 305.0,
-    "Percentage": 3.0,
-    "Company_Size_before_Layoffs": 10167.0,
+    "Laid_Off": 305,
     "ticker": "MSFT"
+  },
+  {
+    "Company": "Google",
+    "Date_layoffs": "2025-06-24",
+    "Laid_Off": 75,
+    "ticker": "GOOGL"
   },
   {
     "Company": "Microsoft",
     "Date_layoffs": "2025-07-02",
-    "Laid_Off": 9000.0,
-    "Percentage": 4.0,
-    "Company_Size_before_Layoffs": 225000.0,
+    "Laid_Off": 9000,
     "ticker": "MSFT"
+  },
+  {
+    "Company": "Microsoft",
+    "Date_layoffs": "2025-09-08",
+    "Laid_Off": 42,
+    "ticker": "MSFT"
+  },
+  {
+    "Company": "Google",
+    "Date_layoffs": "2025-10-01",
+    "Laid_Off": 100,
+    "ticker": "GOOGL"
+  },
+  {
+    "Company": "Google",
+    "Date_layoffs": "2025-10-02",
+    "Laid_Off": 50,
+    "ticker": "GOOGL"
+  },
+  {
+    "Company": "Meta",
+    "Date_layoffs": "2025-10-22",
+    "Laid_Off": 600,
+    "ticker": "META"
+  },
+  {
+    "Company": "Amazon",
+    "Date_layoffs": "2025-10-27",
+    "Laid_Off": 14000,
+    "ticker": "AMZN"
+  },
+  {
+    "Company": "Amazon",
+    "Date_layoffs": "2025-12-15",
+    "Laid_Off": 84,
+    "ticker": "AMZN"
+  },
+  {
+    "Company": "Meta",
+    "Date_layoffs": "2026-01-13",
+    "Laid_Off": 1500,
+    "ticker": "META"
+  },
+  {
+    "Company": "Amazon",
+    "Date_layoffs": "2026-01-28",
+    "Laid_Off": 16000,
+    "ticker": "AMZN"
+  },
+  {
+    "Company": "Amazon",
+    "Date_layoffs": "2026-03-04",
+    "Laid_Off": 100,
+    "ticker": "AMZN"
   }
 ]
