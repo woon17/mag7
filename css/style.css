@@ -957,7 +957,11 @@ header h1 {
   background: #21262d;
   border: 1px solid #30363d;
   border-radius: 6px;
-  padding: 10px 12px;
+  padding: 8px 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
   transition: opacity 0.3s, transform 0.3s;
   opacity: 0.3;
   transform: scale(0.95);
@@ -968,21 +972,32 @@ header h1 {
   transform: scale(1);
 }
 
+.layoff-card .card-left {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
 .layoff-card .card-company {
   font-weight: 600;
-  font-size: 0.85rem;
-  margin-bottom: 2px;
+  font-size: 0.82rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .layoff-card .card-detail {
-  font-size: 0.75rem;
+  font-size: 0.72rem;
   color: #8b949e;
+  margin-top: 1px;
 }
 
 .layoff-card .card-count {
-  font-size: 1.3rem;
+  font-size: 1.05rem;
   font-weight: 700;
   color: #f0f6fc;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 /* ========== D3 BRUSH (Compare Mode) ========== */

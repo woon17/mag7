@@ -1382,14 +1382,14 @@ function renderLayoffPanel(layoffs) {
       .attr("data-ticker", d.ticker)
       .attr("data-date", d.date.toISOString());
 
-    card.append("div").attr("class", "card-company")
+    const left = card.append("div").attr("class", "card-left");
+    left.append("div").attr("class", "card-company")
       .style("color", COLORS[d.ticker])
       .text(COMPANY_NAMES[d.ticker]);
+    left.append("div").attr("class", "card-detail")
+      .text(d.percentage != null ? `${fmtDate(d.date)} · ${fmtPct(d.percentage)} of workforce` : fmtDate(d.date));
 
     card.append("div").attr("class", "card-count").text(fmtNum(d.laid_off));
-
-    card.append("div").attr("class", "card-detail")
-      .text(d.percentage != null ? `${fmtDate(d.date)} · ${fmtPct(d.percentage)} of workforce` : fmtDate(d.date));
   });
 
   // Listen to filter changes — must also respect the active year range
