@@ -60,6 +60,31 @@ header h1 {
   font-size: 0.8rem;
 }
 
+/* ========== STATIC VIZ LINKS ========== */
+.static-viz-links {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.static-viz-btn {
+  display: inline-block;
+  padding: 5px 12px;
+  background: #1f2937;
+  color: #58a6ff;
+  border: 1px solid #30363d;
+  border-radius: 6px;
+  font-size: 0.78rem;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background 0.15s;
+}
+
+.static-viz-btn:hover {
+  background: #2d3748;
+  color: #79b8ff;
+}
+
 /* ========== HEADER FILTERS WRAPPER ========== */
 .header-filters {
   display: flex;
