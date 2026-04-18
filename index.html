@@ -114,24 +114,22 @@
 
         const modal = document.getElementById('info-modal');
         const slides = modal.querySelectorAll('.info-slide');
-        const dots = modal.querySelectorAll('.dot');
+        const counter = document.getElementById('slide-counter');
         const prevBtn = document.getElementById('slide-prev');
         const nextBtn = document.getElementById('slide-next');
         let current = 0;
 
         function goTo(n) {
           slides[current].classList.remove('active');
-          dots[current].classList.remove('active');
           current = n;
           slides[current].classList.add('active');
-          dots[current].classList.add('active');
           prevBtn.disabled = current === 0;
           nextBtn.disabled = current === slides.length - 1;
+          counter.textContent = (current + 1) + ' / ' + slides.length;
         }
 
         prevBtn.addEventListener('click', () => { if (current > 0) goTo(current - 1); });
         nextBtn.addEventListener('click', () => { if (current < slides.length - 1) goTo(current + 1); });
-        dots.forEach((d, i) => d.addEventListener('click', () => goTo(i)));
 
         document.getElementById('open-info-modal').addEventListener('click', () => {
           goTo(0);

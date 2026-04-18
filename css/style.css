@@ -120,9 +120,19 @@ header h1 {
 .info-modal-close:hover { color: #f0f6fc; background: #21262d; }
 
 /* ========== SLIDES ========== */
-.info-slides { min-height: 260px; }
+.info-slides {
+  height: 300px;
+  overflow: hidden;
+  position: relative;
+}
 
-.info-slide { display: none; animation: slideIn 0.25s ease; }
+.info-slide {
+  display: none;
+  position: absolute;
+  inset: 0;
+  overflow-y: auto;
+  animation: slideIn 0.25s ease;
+}
 .info-slide.active { display: block; }
 
 @keyframes slideIn {
@@ -244,16 +254,13 @@ header h1 {
 .info-nav-btn:hover:not(:disabled) { background: #2d3748; color: #f0f6fc; }
 .info-nav-btn:disabled { opacity: 0.3; cursor: default; }
 
-.info-dots { display: flex; gap: 8px; }
-.dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: #30363d;
-  cursor: pointer;
-  transition: background 0.2s;
+.slide-counter {
+  font-size: 0.82rem;
+  color: #8b949e;
+  font-variant-numeric: tabular-nums;
+  min-width: 40px;
+  text-align: center;
 }
-.dot.active { background: #58a6ff; }
 
 /* ========== STATIC VIZ LINKS ========== */
 .static-viz-links {
