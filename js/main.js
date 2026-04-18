@@ -1405,25 +1405,35 @@ function renderLayoffPanel(layoffs) {
   });
 
   // Listen to time — show cards within the active range
+  let prevPanelT = null;
+  let prevPanelStart = null;
   timeListeners.push((t) => {
-    let newlyVisible = null;
-    let newlyHidden = false;
+    let firstVisible = null;
     let lastVisible = null;
+    let anyChange = false;
     panel.selectAll(".layoff-card").each(function () {
       const card = d3.select(this);
       const cardDate = new Date(card.attr("data-date"));
       const inRange = cardDate >= rangeStartTime && cardDate <= t;
       const wasVisible = card.classed("visible");
       card.classed("visible", inRange);
-      if (inRange && !wasVisible) newlyVisible = this;
-      if (!inRange && wasVisible) newlyHidden = true;
+      if (inRange !== wasVisible) anyChange = true;
+      if (inRange && !firstVisible) firstVisible = this;
       if (inRange) lastVisible = this;
     });
-    if (newlyVisible) {
-      newlyVisible.scrollIntoView({ block: "end", behavior: "smooth" });
-    } else if (newlyHidden && lastVisible) {
-      lastVisible.scrollIntoView({ block: "end", behavior: "smooth" });
+    if (anyChange) {
+      const endMoved   = compareMode && prevPanelT     !== null && +t             !== +prevPanelT;
+      const startMoved = compareMode && prevPanelStart !== null && +rangeStartTime !== +prevPanelStart;
+      if (endMoved && lastVisible) {
+        lastVisible.scrollIntoView({ block: "end", behavior: "smooth" });
+      } else if (startMoved && firstVisible) {
+        firstVisible.scrollIntoView({ block: "start", behavior: "smooth" });
+      } else if (!compareMode) {
+        if (lastVisible) lastVisible.scrollIntoView({ block: "end", behavior: "smooth" });
+      }
     }
+    prevPanelT     = t;
+    prevPanelStart = rangeStartTime;
   });
 
   // Show/hide cards when year filter changes
