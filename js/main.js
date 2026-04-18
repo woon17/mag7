@@ -1420,9 +1420,9 @@ function renderLayoffPanel(layoffs) {
       if (inRange) lastVisible = this;
     });
     if (newlyVisible) {
-      newlyVisible.scrollIntoView({ block: "nearest", behavior: "smooth" });
+      newlyVisible.scrollIntoView({ block: "end", behavior: "smooth" });
     } else if (newlyHidden && lastVisible) {
-      lastVisible.scrollIntoView({ block: "nearest", behavior: "smooth" });
+      lastVisible.scrollIntoView({ block: "end", behavior: "smooth" });
     }
   });
 
